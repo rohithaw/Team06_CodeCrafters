@@ -1,5 +1,9 @@
 package com.tests;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 
@@ -46,24 +50,32 @@ public class AtoZRecepies {
 		driver.findElement(By.xpath("//a[@href='recipes-for-babies-1215']")).click();
 		je.executeScript("window.scrollBy(0,5000)");
 		
-		XSSFWorkbook wb = new XSSFWorkbook();
-		XSSFSheet sheet = wb.createSheet("Sheet1");
-		XSSFRow headingrow = sheet.createRow(0);
-			headingrow.createCell(0).setCellValue("RecipeId");
+		Receipedetails();
+		
+	}
+		
+		
+		public void Receipedetails() throws IOException, Exception {
+			
+			Thread.sleep(50);
+		
+			XSSFWorkbook wb = new XSSFWorkbook();
+			XSSFSheet sheet = wb.createSheet("Recipes");
+		    XSSFRow headingrow = sheet.createRow(0);
+		    headingrow.createCell(0).setCellValue("RecipeId");
 			headingrow.createCell(1).setCellValue("Recipe Name");
 			headingrow.createCell(2).setCellValue("Recipe Category(Breakfast/lunch/snack/dinner)");
 			headingrow.createCell(3).setCellValue("Food Category(Veg/non-veg/vegan/Jain)");
 			headingrow.createCell(4).setCellValue("Ingredients");
-//			headingrow.createCell(5).setCellValue("Preparation Time");
-//			headingrow.createCell(6).setCellValue("Cooking Time");
+			headingrow.createCell(5).setCellValue("Preparation Time");
+			headingrow.createCell(6).setCellValue("Cooking Time");
 			headingrow.createCell(7).setCellValue("Tag");
-//			headingrow.createCell(8).setCellValue("No of servings");
+			headingrow.createCell(8).setCellValue("No of servings");
 			headingrow.createCell(9).setCellValue("Cuisine category");
-//			headingrow.createCell(10).setCellValue("Recipe Description");
-//			headingrow.createCell(11).setCellValue("Preparation method");
-//			headingrow.createCell(12).setCellValue("Nutrient values");
-//			headingrow.createCell(13).setCellValue("Recipe Description");
-//			headingrow.createCell(14).setCellValue("Recipe URL");
+			headingrow.createCell(10).setCellValue("Recipe Description");
+			headingrow.createCell(11).setCellValue("Preparation method");
+			headingrow.createCell(12).setCellValue("Nutrient values");
+			headingrow.createCell(13).setCellValue("Recipe URL");
 			
 	        int rownum=1;
 	        
@@ -87,9 +99,9 @@ public class AtoZRecepies {
 				WebElement receipeId = driver.findElement(By.xpath("//div[@class='recipelist']/article["+i+"]"));
 				String St=receipeId.getText().split("\\n")[0].split(" ")[1];
 				System.out.println("Recipe Id is: " +St);
+				row.createCell(0).setCellValue(St);
 
 				// Get the recipe name
-				row.createCell(0).setCellValue(St);
 				String receipeName = driver.findElement(By.xpath("//div[@class='recipelist']/article[\" + i + \"]/div[3]/span/a")).getText();
 				row.createCell(1).setCellValue(receipeName);
 				System.out.println("Recipe Name is :" +receipeName);
@@ -98,7 +110,7 @@ public class AtoZRecepies {
 				WebElement item1 = driver.findElement(By.xpath("//div[@class='recipelist']/article[" + i + "]/div[3]/span/a"));
 				item1.click();
 
-				//JavascriptExecutor je = (JavascriptExecutor) driver;
+				JavascriptExecutor je = (JavascriptExecutor) driver;
 				je.executeScript("window.scrollBy(0,200)");
 				
 				// Get the recipe Category
@@ -121,22 +133,16 @@ public class AtoZRecepies {
 					 RecipeCategory = "Snack";  
 				 }
 				
-				row.createCell(2).setCellValue(RecipeCategory );
-				System.out.println("Recipe Category is :" +RecipeCategory );
+				row.createCell(2).setCellValue(RecipeCategory);
+				System.out.println("Recipe Category is :" +RecipeCategory);
 				je.executeScript("window.scrollBy(0,200)");
 				
-				// Get the Ingredients
-				String Ingredients = driver.findElement(By.xpath("//div[@id='rcpinglist']")).getText();
-				row.createCell(4).setCellValue(Ingredients);
-				System.out.println("Ingredients are :" +Ingredients);
-				je.executeScript("window.scrollBy(0,200)");
 				
-				//Get Tags
+               //Get Tags
 				
 				String RecipeTags = driver.findElement(By.id("recipe_tags")).getText();
-				row.createCell(7).setCellValue(Ingredients);
+				row.createCell(7).setCellValue(RecipeTags);
 				System.out.println("tags are : " +RecipeTags);
-				
 				// Get the Food Category(Veg/non-veg/vegan/Jain)
 				
 				//String foodcategory = driver.findElement(By.xpath("//div[@id='rcpinglist']")).getText();
@@ -165,6 +171,28 @@ public class AtoZRecepies {
 			row.createCell(3).setCellValue(FoodCategory );
 			System.out.println("Recipe Category is :" +FoodCategory );
 			je.executeScript("window.scrollBy(0,200)");
+				
+				
+				// Get the Ingredients
+				String Ingredients = driver.findElement(By.xpath("//div[@id='rcpinglist']")).getText();
+				row.createCell(4).setCellValue(Ingredients);
+				System.out.println("Ingredients are :" +Ingredients);
+				je.executeScript("window.scrollBy(0,200)");
+				
+				//Preperation time 
+				String Preparationtime = driver.findElement(By.xpath("//time[@itemprop='prepTime']")).getText();
+				row.createCell(5).setCellValue(Preparationtime);
+				System.out.println("Preperation Time is :" +Preparationtime);
+				je.executeScript("window.scrollBy(0,200)");
+				
+				//Cooking Time 
+				
+				String Cookingtime = driver.findElement(By.xpath("//time[@itemprop='cookTime']")).getText();
+				row.createCell(6).setCellValue(Cookingtime);
+				System.out.println("Cooking Time is :" +Cookingtime);
+				je.executeScript("window.scrollBy(0,100)");
+				
+				
 		
 
 			// Get cuisinecategory 
@@ -297,24 +325,58 @@ public class AtoZRecepies {
 		    row.createCell(9).setCellValue(CuisineCategory);
 			System.out.println("Cuisine Category is :" +CuisineCategory );
 				
-			 
-	        
-			//Preperation time 
-			String Preparationtime = driver.findElement(By.xpath("//time[@itemprop='prepTime']")).getText();
-			row.createCell(5).setCellValue(Preparationtime);
-			System.out.println("Preperation Time is :" +Preparationtime);
-			je.executeScript("window.scrollBy(0,200)");
 			
-			//Cooking Time 
 			
-			String Cookingtime = driver.findElement(By.xpath("//time[@itemprop='cookTime']")).getText();
-			row.createCell(6).setCellValue(Cookingtime);
-			System.out.println("Cooking Time is :" +Cookingtime);
-			je.executeScript("window.scrollBy(0,100)");
+			//No.Of Servings
+			String NoofServings = driver.findElement(By.xpath("//span[@id='ctl00_cntrightpanel_lblServes']")).getText();
+			row.createCell(8).setCellValue(NoofServings);
+			System.out.println("No of Servings are : " +NoofServings);
 			
-			driver.navigate().back();
 			
-			}
+			//Preparation Method
+			WebElement prepMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']"));	
+			String PrepMethod = prepMethod.getText();
+			System.out.println("Preparation Method : " +PrepMethod);
+			row.createCell(11).setCellValue(PrepMethod);
+			
+			//Nutrient Value 
+			try {
+				String NutrientsValue = driver.findElement(By.xpath("//table[@id='rcpnutrients']/tbody")).getText();
+				row.createCell(12).setCellValue(NutrientsValue);
+				System.out.println(NutrientsValue);
+	            }
+	            catch(Exception e) {
+	            	System.out.println("NutrientsValue:" + "null");
+	            	
+	            }
+				je.executeScript("window.scrollBy(0,100)");
+
+				// Recipe Description
+				
+				WebElement Desc = driver.findElement(By.xpath("//span[@id='ctl00_cntrightpanel_lblDesc']"));
+				String receipeDesc = Desc.getText().substring(0, 30);
+				System.out.println("Receipe Description is : " +receipeDesc);
+				row.createCell(10).setCellValue(receipeDesc);
+
+			//Receipe URL
+				
+				String receipeurl = driver.getCurrentUrl();
+				row.createCell(13).setCellValue(receipeurl);
+				System.out.println(receipeurl);
+				je.executeScript("window.scrollBy(0,100)");
+				
+			
+		
+			
+				FileOutputStream outputStream = new FileOutputStream("ReceipeExtract.xlsx");
+
+     			wb.write(outputStream);
+				
+				Thread.sleep(20);
+
+				driver.navigate().back();
+
+			}}
 
 			}    
 	        
@@ -330,7 +392,7 @@ public class AtoZRecepies {
 
 //}
 
-}
+
 
 
 
