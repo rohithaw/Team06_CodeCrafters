@@ -22,7 +22,7 @@ import com.utilities.CreateExcel;
 import com.utilities.ExcelRead;
 import com.utilities.ExcelWrite;
 
-public class DinnerRecipes {
+public class A_ZScrapedRecipesLFV {
 	private static ThreadLocal<WebDriver> tlDriver = new ThreadLocal<>();
 
 	private List<String> excelIngredients;
@@ -142,7 +142,7 @@ public class DinnerRecipes {
 				recipeName = recipeNameElement.getText();
 				System.out.println("Recipe Name: " + recipeName);
 
-				getRecipeDescription();
+			
 
 				// Clicking into the recipe link
 				recipeNameElement.click();
@@ -155,6 +155,7 @@ public class DinnerRecipes {
 				getCookingTime();
 				getNutrientValues();
 				getNoOfServings();
+				getRecipeDescription();
 
 				extractIngredients();
 				List<String> matchedIngredients = matchIngredientsWithExcel();
@@ -235,7 +236,7 @@ public class DinnerRecipes {
 
 	private void getTags() {
 		try {
-			recipeTags = getDriver().findElement(By.xpath("//div[@id='recipe_tags']/a/span")).getText();
+			recipeTags = getDriver().findElement(By.id("recipe_tags")).getText();
 			System.out.println("Tags are : " + recipeTags);
 		} catch (NoSuchElementException e) {
 			recipeTags = "Unknown";
@@ -409,7 +410,7 @@ public class DinnerRecipes {
 			String ingredientName = ingredient.getText().trim().toLowerCase();
 			webIngredients.add(ingredientName);
 		}
-
+//Add ingredients
 		// Match ingredients with Excel ingredients list (partial matches allowed)
 		for (String webIngredient : webIngredients) {
 			for (String excelIngredient : excelIngredients) {
@@ -423,6 +424,7 @@ public class DinnerRecipes {
 		}
 		return matchedIngredients;
 	}
+	
 
 	private boolean navigateToNextPage() {
 		try {
