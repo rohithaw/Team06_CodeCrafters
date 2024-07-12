@@ -23,7 +23,7 @@ public class CreateExcel {
 		}
 
 		try (Workbook workbook = new XSSFWorkbook()) {
-			String[] sheetNames = { "FullRecipeList", "LFVEliminate", "LFVAdd","LCHFEliminate","LCHFAdd","LFVAllergy" };
+			String[] sheetNames = {"LFVEliminate", "LFVAdd","LFVRecipesToAvoid","LFVOptionalrecipes","LCHFEliminate","LCHFAdd","LFVAllergy" };
 
 			for (String sheetName : sheetNames) {
 				Sheet sheet = workbook.createSheet(sheetName);
