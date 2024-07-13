@@ -1,28 +1,31 @@
-package com.pages;
+package com.tests;
 
 import java.io.IOException;
-
+import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.tests.A_ZScrapedRecipesLFV;
 import com.utilities.ConfigReader;
+import com.utilities.CreateExcel;
 import com.utilities.ExcelRead;
 import com.utilities.ExcelWrite;
 
-public class HomePage extends A_ZScrapedRecipesLFV {
+public class A_ZScrapedRecipesLCHF {
+	private static ThreadLocal<WebDriver> tlDriver = new ThreadLocal<>();
 
-	private WebDriver driver;
-	private List<String> excelVeganIngredients;
-	private List<String> excelNotFullyVeganIngredients;
+	private List<String> excelIngredients;
 	private String recipeName;
 	private String recipeCategory;
 	private String recipeTags;
@@ -34,32 +37,68 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 	private String preparationMethod;
 	private String nutrientValues;
 	private String noOfServings;
-	String alphabetPageTitle = "";
-	
-	List<String> columnNamesVegan = Collections.singletonList("Add");
-    List<String> columnNamesNotFullyVegan = Collections.singletonList("To Add ( if not fully vegan)");
+
+	public static void browsersetup() {
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments("--headless"); // Uncomment if you want to run in
+		// headless mode
+		options.addArguments("--disable-popup-blocking");
+		options.addArguments("--disable-notifications");
+		options.addArguments("--disable-extensions");
+		options.addArguments("disable-gpu"); // Applicable to Windows OS only
+		options.addArguments("blink-settings=imagesEnabled=false"); // Disable images
+		tlDriver.set(new ChromeDriver(options));
+	};
+
+	private WebDriver getDriver() {
+		if (tlDriver.get() == null) {
+			browsersetup();
+		}
+		return tlDriver.get();
+	}
+
+	JavascriptExecutor je = (JavascriptExecutor) getDriver();
 
 	@BeforeClass
-	public void readExcel() throws Throwable {
-		String userDir = System.getProperty("user.dir");
-		String getPathread = ConfigReader.getGlobalValue("inputExcelPath");
-		String inputDataPath = userDir + getPathread;
+	public void setUp() throws Throwable {
+		CreateExcel.createExcelWorkBook();
+		getDriver().get("https://www.tarladalal.com/");
+		getDriver().manage().window().maximize();
+		getDriver().manage().deleteAllCookies();
 
 		try {
-			excelVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesVegan, inputDataPath);
-			excelNotFullyVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
-					columnNamesNotFullyVegan, inputDataPath);
-			System.out.println("Vegan Ingredients List: " + excelVeganIngredients);
-			System.out.println("Not Fully Vegan Ingredients List: " + excelNotFullyVeganIngredients);
+			String userDir = System.getProperty("user.dir");
+			String getPathread = ConfigReader.getGlobalValue("inputExcelPath");
+			String inputDataPath = userDir + getPathread;
+			excelIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", "Add", inputDataPath);
+			System.out.println("To Add Ingredients List: " + excelIngredients.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+	@AfterClass
+	public void tearDown() {
+		if (tlDriver.get() != null) {
+			tlDriver.get().quit();
+			tlDriver.remove();
+		}
+	}
+
 	@Test
-	public void extractDataFromPages(WebDriver driver, String alphabetPageTitle) throws Throwable {
-		this.driver = driver;
+	public void extractDataFromPages() throws Throwable {
+		navigateToDinnerRecipes();
 		extractRecipes();
+	}
+
+	private void navigateToDinnerRecipes() {
+		getDriver().findElement(By.xpath("(//a[@href='RecipeCategories.aspx'])[1]")).click();
+
+		FluentWait<WebDriver> wait = new FluentWait<>(getDriver()).withTimeout(Duration.ofSeconds(60))
+				.pollingEvery(Duration.ofSeconds(5)).ignoring(NoSuchElementException.class);
+
+		wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//a[@href='recipes-for-dinner-menus-1116']")))
+				.click();
 	}
 
 	private void extractRecipes() throws Throwable {
@@ -70,7 +109,7 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 			System.out.println("Page Number: " + pageIndex);
 
 			try {
-				List<WebElement> recipeCards = driver.findElements(By.className("rcc_recipecard"));
+				List<WebElement> recipeCards = getDriver().findElements(By.className("rcc_recipecard"));
 				System.out.println("No_of_recipes: " + recipeCards.size());
 
 				for (int j = 0; j < recipeCards.size(); j++) {
@@ -89,7 +128,7 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 
 	private void processRecipe(int index) throws Throwable {
 		try {
-			List<WebElement> recipeCards = driver.findElements(By.className("rcc_recipecard"));
+			List<WebElement> recipeCards = getDriver().findElements(By.className("rcc_recipecard"));
 			if (index < recipeCards.size()) {
 				WebElement recipeCard = recipeCards.get(index);
 
@@ -102,6 +141,8 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 				WebElement recipeNameElement = recipeCard.findElement(By.xpath(".//span[@class='rcc_recipename']/a"));
 				recipeName = recipeNameElement.getText();
 				System.out.println("Recipe Name: " + recipeName);
+
+			
 
 				// Clicking into the recipe link
 				recipeNameElement.click();
@@ -117,29 +158,17 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 				getRecipeDescription();
 
 				extractIngredients();
-				List<String> matchedVeganIngredients = matchIngredientsWithExcel(excelVeganIngredients);
-				List<String> matchedNotFullyVeganIngredients = matchIngredientsWithExcel(excelNotFullyVeganIngredients);
+				List<String> matchedIngredients = matchIngredientsWithExcel();
 
-				String userDir = System.getProperty("user.dir");
-				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
-				String outputDataPath = userDir + getPathread;
-				if (!matchedVeganIngredients.isEmpty()) {
+				if (!matchedIngredients.isEmpty()) {
 					try {
+						String userDir = System.getProperty("user.dir");
+						String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
+						String outputDataPath = userDir + getPathread;
 						ExcelWrite.writeToExcel("LFVAdd", id, recipeName, recipeCategory, foodCategory,
-								String.join(", ", matchedVeganIngredients), preparationTime, cookingTime, recipeTags,
+								String.join(", ", matchedIngredients), preparationTime, cookingTime, recipeTags,
 								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
-								driver.getCurrentUrl(), outputDataPath);
-					} catch (IOException e) {
-						System.out.println("Error writing to Excel: " + e.getMessage());
-					}
-				}
-
-				if (!matchedNotFullyVeganIngredients.isEmpty()) {
-					try {
-						ExcelWrite.writeToExcel("LFVAddNotFullyVegan", id, recipeName, recipeCategory, foodCategory,
-								String.join(", ", matchedVeganIngredients), preparationTime, cookingTime, recipeTags,
-								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
-								driver.getCurrentUrl(), outputDataPath);
+								getDriver().getCurrentUrl(), outputDataPath);
 					} catch (IOException e) {
 						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
@@ -149,8 +178,8 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 				int retryCount = 0;
 				while (retryCount < maxRetries) {
 					try {
-						driver.navigate().back();
-						driver.findElement(By.className("rcc_recipecard")).isDisplayed();
+						getDriver().navigate().back();
+						getDriver().findElement(By.className("rcc_recipecard")).isDisplayed();
 						return; // Navigation successful, exit retry loop
 					} catch (NoSuchElementException e) {
 						System.out.println("Element not found, retrying...");
@@ -169,7 +198,7 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 	}
 
 	private void extractIngredients() {
-		List<WebElement> ingredientsList = driver
+		List<WebElement> ingredientsList = getDriver()
 				.findElements(By.xpath("//div[@id='rcpinglist']//span[@itemprop='recipeIngredient']//a/span"));
 		List<String> webIngredients = new ArrayList<>();
 
@@ -185,7 +214,7 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 
 		try {
 			// je.executeScript("window.scrollBy(0,200)");
-			String receipeCategory = driver.findElement(By.xpath("//a[@itemprop='recipeCategory'][1]")).getText();
+			String receipeCategory = getDriver().findElement(By.xpath("//a[@itemprop='recipeCategory'][1]")).getText();
 			if (receipeCategory.toLowerCase().contains("lunch") || recipeName.toLowerCase().contains("lunch")) {
 				recipeCategory = "Lunch";
 			} else if (receipeCategory.toLowerCase().contains("breakfast")
@@ -207,7 +236,7 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 
 	private void getTags() {
 		try {
-			recipeTags = driver.findElement(By.id("recipe_tags")).getText();
+			recipeTags = getDriver().findElement(By.id("recipe_tags")).getText();
 			System.out.println("Tags are : " + recipeTags);
 		} catch (NoSuchElementException e) {
 			recipeTags = "Unknown";
@@ -222,7 +251,7 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 				foodCategory = "VEGAN";
 			} else if (recipeName.contains("Jain") || recipeTags.contains("Jain")) {
 				foodCategory = "JAIN";
-			} else if (recipeName.contains("Egg") || recipeTags.contains("Egg")) {
+			} else if (recipeName.contains("Egg ") || recipeTags.contains("Egg ")) {
 				foodCategory = "EGGITARIAN";
 			} else if (recipeName.contains("NonVeg") || recipeTags.contains("NonVeg")) {
 				foodCategory = "NONVEGETARIAN";
@@ -313,7 +342,7 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 
 	private void getPreparationTime() {
 		try {
-			preparationTime = driver.findElement(By.xpath("//time[@itemprop='prepTime']")).getText();
+			preparationTime = getDriver().findElement(By.xpath("//time[@itemprop='prepTime']")).getText();
 			System.out.println("Preperation Time is :" + preparationTime);
 			// je.executeScript("window.scrollBy(0,200)");
 		} catch (NoSuchElementException e) {
@@ -323,7 +352,7 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 
 	private void getCookingTime() {
 		try {
-			cookingTime = driver.findElement(By.xpath("//time[@itemprop='cookTime']")).getText();
+			cookingTime = getDriver().findElement(By.xpath("//time[@itemprop='cookTime']")).getText();
 			System.out.println("Cooking Time is :" + cookingTime);
 		} catch (NoSuchElementException e) {
 			cookingTime = "Unknown";
@@ -332,7 +361,8 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 
 	private void getRecipeDescription() {
 		try {
-			recipeDescription = driver.findElement(By.xpath("//span[@id='ctl00_cntrightpanel_lblDesc']")).getText();
+			recipeDescription = getDriver().findElement(By.xpath("//span[@id='ctl00_cntrightpanel_lblDesc']"))
+					.getText();
 			System.out.println("Recipe Description: " + recipeDescription);
 		} catch (NoSuchElementException e) {
 			recipeDescription = "Unknown";
@@ -342,7 +372,8 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 
 	private void getPreparationMethod() {
 		try {
-			preparationMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']")).getText();
+			preparationMethod = getDriver().findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']"))
+					.getText();
 			System.out.println("Preparation Method : " + preparationMethod);
 
 		} catch (NoSuchElementException e) {
@@ -353,7 +384,7 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 
 	private void getNutrientValues() {
 		try {
-			nutrientValues = driver.findElement(By.xpath("//table[@id='rcpnutrients']/tbody")).getText();
+			nutrientValues = getDriver().findElement(By.xpath("//table[@id='rcpnutrients']/tbody")).getText();
 			System.out.println("Nutrient Values: " + nutrientValues);
 		} catch (NoSuchElementException e) {
 			nutrientValues = "Unknown";
@@ -362,15 +393,15 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 
 	private void getNoOfServings() {
 		try {
-			noOfServings = driver.findElement(By.id("ctl00_cntrightpanel_lblServes")).getText();
+			noOfServings = getDriver().findElement(By.id("ctl00_cntrightpanel_lblServes")).getText();
 			System.out.println("No of Servings: " + noOfServings);
 		} catch (NoSuchElementException e) {
 			noOfServings = "Unknown";
 		}
 	}
 
-	private List<String> matchIngredientsWithExcel(List<String> excelIngredients) {
-		List<WebElement> ingredientsList = driver
+	private List<String> matchIngredientsWithExcel() {
+		List<WebElement> ingredientsList = getDriver()
 				.findElements(By.xpath("//div[@id='rcpinglist']//span[@itemprop='recipeIngredient']//a/span"));
 		List<String> webIngredients = new ArrayList<>();
 		List<String> matchedIngredients = new ArrayList<>();
@@ -393,10 +424,12 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 		}
 		return matchedIngredients;
 	}
+	
 
 	private boolean navigateToNextPage() {
 		try {
-			WebElement nextPageIndex = driver.findElement(By.xpath("//*[@class='rescurrpg']/following-sibling::a"));
+			WebElement nextPageIndex = getDriver()
+					.findElement(By.xpath("//*[@class='rescurrpg']/following-sibling::a"));
 			nextPageIndex.click();
 			return true;
 		} catch (Exception e) {
