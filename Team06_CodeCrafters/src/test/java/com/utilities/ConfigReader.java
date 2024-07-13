@@ -54,5 +54,9 @@ public class ConfigReader {
 		else
 			throw new RuntimeException("webpage url is not specified in the config.properties file.");
 	}
+	
+//	public static boolean isUserVegan() {
+//        return Boolean.parseBoolean(properties.getProperty("isUserVegan"));
+//    }
 
 }
