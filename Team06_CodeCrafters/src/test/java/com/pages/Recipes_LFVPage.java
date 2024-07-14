@@ -13,12 +13,12 @@ import org.openqa.selenium.WebElement;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.tests.A_ZScrapedRecipesLFV;
+import com.tests.A_ZScrapedRecipes;
 import com.utilities.ConfigReader;
 import com.utilities.ExcelRead;
 import com.utilities.ExcelWrite;
 
-public class HomePage extends A_ZScrapedRecipesLFV {
+public class Recipes_LFVPage extends A_ZScrapedRecipes {
 
 	private WebDriver driver;
 	private List<String> excelVeganIngredients;
@@ -35,9 +35,9 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 	private String nutrientValues;
 	private String noOfServings;
 	String alphabetPageTitle = "";
-	
+
 	List<String> columnNamesVegan = Collections.singletonList("Add");
-    List<String> columnNamesNotFullyVegan = Collections.singletonList("To Add ( if not fully vegan)");
+	List<String> columnNamesNotFullyVegan = Collections.singletonList("To Add ( if not fully vegan)");
 
 	@BeforeClass
 	public void readExcel() throws Throwable {
@@ -46,7 +46,8 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 		String inputDataPath = userDir + getPathread;
 
 		try {
-			excelVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesVegan, inputDataPath);
+			excelVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesVegan,
+					inputDataPath);
 			excelNotFullyVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
 					columnNamesNotFullyVegan, inputDataPath);
 			System.out.println("Vegan Ingredients List: " + excelVeganIngredients);
@@ -123,25 +124,28 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 				String userDir = System.getProperty("user.dir");
 				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
 				String outputDataPath = userDir + getPathread;
-				if (!matchedVeganIngredients.isEmpty()) {
-					try {
-						ExcelWrite.writeToExcel("LFVAdd", id, recipeName, recipeCategory, foodCategory,
-								String.join(", ", matchedVeganIngredients), preparationTime, cookingTime, recipeTags,
-								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
-								driver.getCurrentUrl(), outputDataPath);
-					} catch (IOException e) {
-						System.out.println("Error writing to Excel: " + e.getMessage());
+				if (recipeName.contains("Vegan") || recipeTags.contains("Vegan"))  {
+					if (!matchedVeganIngredients.isEmpty()) {
+						try {
+							ExcelWrite.writeToExcel("LFVAdd", id, recipeName, recipeCategory, foodCategory,
+									String.join(", ", matchedVeganIngredients), preparationTime, cookingTime,
+									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
+									nutrientValues, driver.getCurrentUrl(), outputDataPath);
+						} catch (IOException e) {
+							System.out.println("Error writing to Excel: " + e.getMessage());
+						}
 					}
-				}
+				} else {
 
-				if (!matchedNotFullyVeganIngredients.isEmpty()) {
-					try {
-						ExcelWrite.writeToExcel("LFVAddNotFullyVegan", id, recipeName, recipeCategory, foodCategory,
-								String.join(", ", matchedVeganIngredients), preparationTime, cookingTime, recipeTags,
-								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
-								driver.getCurrentUrl(), outputDataPath);
-					} catch (IOException e) {
-						System.out.println("Error writing to Excel: " + e.getMessage());
+					if (!matchedNotFullyVeganIngredients.isEmpty()) {
+						try {
+							ExcelWrite.writeToExcel("LFVAddNotFullyVegan", id, recipeName, recipeCategory, foodCategory,
+									String.join(", ", matchedVeganIngredients), preparationTime, cookingTime,
+									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
+									nutrientValues, driver.getCurrentUrl(), outputDataPath);
+						} catch (IOException e) {
+							System.out.println("Error writing to Excel: " + e.getMessage());
+						}
 					}
 				}
 
@@ -217,7 +221,6 @@ public class HomePage extends A_ZScrapedRecipesLFV {
 	// Get the Food Category(Veg/non-veg/vegan/Jain)
 	private void getFoodCategory() {
 		try {
-
 			if (recipeName.contains("Vegan") || recipeTags.contains("Vegan")) {
 				foodCategory = "VEGAN";
 			} else if (recipeName.contains("Jain") || recipeTags.contains("Jain")) {
