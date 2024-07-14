@@ -15,12 +15,12 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.base.BaseClass;
-import com.pages.HomePage;
+import com.pages.Recipes_LFVPage;
 import com.utilities.CreateExcel;
 
-public class A_ZScrapedRecipesLFV {
+public class A_ZScrapedRecipes {
 
-	private HomePage homePage;
+	private Recipes_LFVPage homePage;
 
 	@BeforeClass
 	public void createExcelFile() {
@@ -30,7 +30,7 @@ public class A_ZScrapedRecipesLFV {
 	@BeforeMethod
 	public void setup() throws Throwable {
 		BaseClass.browsersetup();
-		homePage = new HomePage();
+		homePage = new Recipes_LFVPage();
 		homePage.readExcel(); // Ensure readExcel is called
 	}
 
