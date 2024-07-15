@@ -1,7 +1,6 @@
 package com.pages;
 
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,192 +8,237 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import com.tests.ScrapedRecipesLCHF;
+//import com.tests.A_ZScrapedRecipes;
 import com.utilities.ConfigReader;
 import com.utilities.ExcelRead;
 import com.utilities.ExcelWrite;
 
-public class LCHFPage extends ScrapedRecipesLCHF {
+public class Recipes_LCHFPage {
 
-	private WebDriver driver;
-	private List<String> excellchfAddIngredients;
+    private WebDriver driver;
+    private List<String> excellchfAddIngredients;
 	private List<String> excellchfEliminateIngredients;
-	private String recipeName;
-	private String recipeCategory;
-	private String recipeTags;
-	private String foodCategory;
-	private String cuisineCategory;
-	private String preparationTime;
-	private String cookingTime;
-	private String recipeDescription;
-	private String preparationMethod;
-	private String nutrientValues;
-	private String noOfServings;
-	String alphabetPageTitle = "";
-	
-	List<String> columnNamesAdd = Collections.singletonList("Add");
+	private List<String> excellchfFoodProcessingIngredients;
+    private String recipeName;
+    private String recipeCategory;
+    private String recipeTags;
+    private String foodCategory;
+    private String cuisineCategory;
+    private String preparationTime;
+    private String cookingTime;
+    private String recipeDescription;
+    private String preparationMethod;
+    private String nutrientValues;
+    private String noOfServings;
+    String alphabetPageTitle = "";
+
+    List<String> columnNamesAdd = Collections.singletonList("Add");
     List<String> columnNamesEliminate = Collections.singletonList("Eliminate");
+    List<String> columnNamesFoodPRocessing = Collections.singletonList("Food Processing");
 
-	@BeforeClass
-	public void readExcel() throws Throwable {
-		String userDir = System.getProperty("user.dir");
-		String getPathread = ConfigReader.getGlobalValue("inputExcelPath");
-		String inputDataPath = userDir + getPathread;
+    @BeforeClass
+    public void readExcel() throws Throwable {
+        String userDir = System.getProperty("user.dir");
+        String getPathread = ConfigReader.getGlobalValue("inputExcelPath");
+        String inputDataPath = userDir + getPathread;
 
-		try {
-			excellchfAddIngredients = ExcelRead.getDataFromExcel("Final list for LCHFElimination ", columnNamesAdd, inputDataPath);
-			excellchfEliminateIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",columnNamesEliminate, inputDataPath);
+        try {
+        	excellchfAddIngredients = ExcelRead.getDataFromExcel("Final list for LCHFElimination ", columnNamesAdd, inputDataPath);
+			excellchfEliminateIngredients = ExcelRead.getDataFromExcel("Final list for LCHFElimination ",columnNamesEliminate, inputDataPath);
+			excellchfFoodProcessingIngredients = ExcelRead.getDataFromExcel("Final list for LCHFElimination ",columnNamesFoodPRocessing, inputDataPath);
 			System.out.println("LCHF Add: " + excellchfAddIngredients);
 			System.out.println("LCHF Eliminate: " + excellchfEliminateIngredients);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+			System.out.println("LCHF Food Processing: " + excellchfFoodProcessingIngredients);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
-	public void extractDataFromPages(WebDriver driver, String alphabetPageTitle) throws Throwable {
-		this.driver = driver;
-		extractRecipes();
-	}
+    public void extractDataFromPages(WebDriver driver, String alphabetPageTitle) throws Throwable {
+        this.driver = driver;
+        extractRecipes();
+    }
 
-	private void extractRecipes() throws Throwable {
-		int pageIndex = 0;
+    private void extractRecipes() throws Throwable {
+        int pageIndex = 0;
 
-		while (true) {
-			pageIndex++;
-			System.out.println("Page Number: " + pageIndex);
+        while (true) {
+            pageIndex++;
+            System.out.println("Page Number: " + pageIndex);
 
-			try {
-				List<WebElement> recipeCards = driver.findElements(By.className("rcc_recipecard"));
-				System.out.println("No_of_recipes: " + recipeCards.size());
+            try {
+                List<WebElement> recipeCards = driver.findElements(By.className("rcc_recipecard"));
+                System.out.println("No_of_recipes: " + recipeCards.size());
 
-				for (int j = 0; j < recipeCards.size(); j++) {
-					processRecipe(j);
-				}
-			} catch (Exception e) {
-				System.out.println("Error while extracting data: " + e.getMessage());
-				break;
-			}
+                for (int j = 0; j < recipeCards.size(); j++) {
+                    processRecipe(j);
+                }
+            } catch (Exception e) {
+                System.out.println("Error while extracting data: " + e.getMessage());
+                break;
+            }
 
-			if (!navigateToNextPage()) {
-				break;
-			}
-		}
-	}
+            if (!navigateToNextPage()) {
+                break;
+            }
+        }
+    }
 
-	private void processRecipe(int index) throws Throwable {
-		try {
-			List<WebElement> recipeCards = driver.findElements(By.className("rcc_recipecard"));
-			if (index < recipeCards.size()) {
-				WebElement recipeCard = recipeCards.get(index);
+    private void processRecipe(int index) throws Throwable {
+        try {
+            List<WebElement> recipeCards = driver.findElements(By.className("rcc_recipecard"));
+            if (index < recipeCards.size()) {
+                WebElement recipeCard = recipeCards.get(index);
 
-				// Getting recipe id
-				String recipeID = recipeCard.getAttribute("id");
-				String id = recipeID.replaceAll("[^0-9]", "");
-				System.out.println("Recipe Id: " + id);
+                // Getting recipe id
+                String recipeID = recipeCard.getAttribute("id");
+                String id = recipeID.replaceAll("[^0-9]", "");
+                System.out.println("Recipe Id: " + id);
 
-				// Getting recipe name
-				WebElement recipeNameElement = recipeCard.findElement(By.xpath(".//span[@class='rcc_recipename']/a"));
-				recipeName = recipeNameElement.getText();
-				System.out.println("Recipe Name: " + recipeName);
+                // Getting recipe name
+                WebElement recipeNameElement = recipeCard.findElement(By.xpath(".//span[@class='rcc_recipename']/a"));
+                recipeName = recipeNameElement.getText();
+                System.out.println("Recipe Name: " + recipeName);
 
-				// Clicking into the recipe link
-				recipeNameElement.click();
-				getRecipeCategory();
-				getTags();
-				getFoodCategory();
-				getcuisineCategory();
-				getPreparationTime();
-				getPreparationMethod();
-				getCookingTime();
-				getNutrientValues();
-				getNoOfServings();
-				getRecipeDescription();
+                // Clicking into the recipe link
+                recipeNameElement.click();
+                getRecipeCategory();
+                getTags();
+                getFoodCategory();
+                getcuisineCategory();
+                getPreparationTime();
+                getPreparationMethod();
+                getCookingTime();
+                getNutrientValues();
+                getNoOfServings();
+                getRecipeDescription();
 
-				extractIngredients();
-				List<String> matchedLchfAddIngredients = matchIngredientsWithExcel(excellchfAddIngredients);
-				List<String> matchedLchfEliminateIngredients = matchIngredientsWithExcel(excellchfEliminateIngredients);
+                List<String> webIngredients = extractIngredients();
+                List<String> matchedLchfAddIngredients = matchIngredientsWithExcel(excellchfAddIngredients,webIngredients);
+				List<String> matchedLchfEliminateIngredients = matchIngredientstoEliminateWithExcel(excellchfEliminateIngredients, webIngredients);
+				//List<String> matchedLchfFoodPRocessing = matchIngredientsWithExcel(excellchfFoodProcessingIngredients, webIngredients);
 
-				String userDir = System.getProperty("user.dir");
-				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
-				String outputDataPath = userDir + getPathread;
-				if (!matchedLchfAddIngredients.isEmpty()) {
-					try {
-						ExcelWrite.writeToExcel("LCHFAdd", id, recipeName, recipeCategory, foodCategory,
-								String.join(", ", matchedLchfAddIngredients), preparationTime, cookingTime, recipeTags,
-								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
-								driver.getCurrentUrl(), outputDataPath);
-					} catch (IOException e) {
-						System.out.println("Error writing to Excel: " + e.getMessage());
-					}
-				}
+                String userDir = System.getProperty("user.dir");
+                String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
+                String outputDataPath = userDir + getPathread;
+                
+                if (!matchedLchfAddIngredients.isEmpty()) {
+                    try {
+                        ExcelWrite.writeToExcel("LCHFAdd", id, recipeName, recipeCategory, foodCategory,
+                                String.join(", ", matchedLchfAddIngredients), preparationTime, cookingTime,
+                                recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
+                                nutrientValues, driver.getCurrentUrl(), outputDataPath);
+                    } catch (IOException e) {
+                        System.out.println("Error writing to Excel: " + e.getMessage());
+                    }
+                }
+                
+                if (!matchedLchfEliminateIngredients.isEmpty()) {
+                    try {
+                        ExcelWrite.writeToExcel("LCHFEliminate", id, recipeName, recipeCategory, foodCategory,
+                                String.join(", ", webIngredients), preparationTime, cookingTime,
+                                recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
+                                nutrientValues, driver.getCurrentUrl(), outputDataPath);
+                    } catch (IOException e) {
+                        System.out.println("Error writing to Excel: " + e.getMessage());
+                    }
+                }
+//                if (!matchedLchfFoodPRocessing.isEmpty()) {
+//					try {
+//						ExcelWrite.writeToExcel("LCHFFoodPRocessing", id, recipeName, recipeCategory, foodCategory,
+//								String.join(", ", webIngredients),
+//								preparationTime, cookingTime, recipeTags,
+//								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
+//								driver.getCurrentUrl(), outputDataPath);
+//					} catch (IOException e) {
+//						System.out.println("Error writing to Excel: " + e.getMessage());
+//					}
+//				}
+         
+                
+                int maxRetries = 3;
+                int retryCount = 0;
+                while (retryCount < maxRetries) {
+                    try {
+                        driver.navigate().back();
+                        driver.findElement(By.className("rcc_recipecard")).isDisplayed();
+                        return; // Navigation successful, exit retry loop
+                    } catch (NoSuchElementException e) {
+                        System.out.println("Element not found, retrying...");
+                        retryCount++;
+                    }
+                }
+            } else {
+                System.out.println("Index " + index + " out of bounds for recipe cards");
+            }
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Index " + index + " out of bounds for recipe cards");
+        } catch (Exception e) {
+            System.out.println("Error in processRecipe: " + e.getMessage());
+        }
+    }
 
-				if (!matchedLchfEliminateIngredients.isEmpty()) {
-					try {
-						ExcelWrite.writeToExcel("LCHFEliminate", id, recipeName, recipeCategory, foodCategory,
-								String.join(", ", matchedLchfEliminateIngredients), preparationTime, cookingTime, recipeTags,
-								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
-								driver.getCurrentUrl(), outputDataPath);
-					} catch (IOException e) {
-						System.out.println("Error writing to Excel: " + e.getMessage());
-					}
-				}
+    private List<String> extractIngredients() {
+        List<WebElement> ingredientsList = driver
+                .findElements(By.xpath("//div[@id='rcpinglist']//span[@itemprop='recipeIngredient']//a/span"));
+        List<String> webIngredients = new ArrayList<>();
 
-				int maxRetries = 3;
-				int retryCount = 0;
-				while (retryCount < maxRetries) {
-					try {
-						driver.navigate().back();
-						driver.findElement(By.className("rcc_recipecard")).isDisplayed();
-						return; // Navigation successful, exit retry loop
-					} catch (NoSuchElementException e) {
-						System.out.println("Element not found, retrying...");
-						retryCount++;
-					}
-				}
-			} else {
-				System.out.println("Index " + index + " out of bounds for recipe cards");
-			}
-		} catch (IndexOutOfBoundsException e) {
-			System.out.println("Index " + index + " out of bounds for recipe cards");
-		} catch (Exception e) {
-			System.out.println("Error in processRecipe: " + e.getMessage());
-		}
+        for (WebElement ingredient : ingredientsList) {
+            String ingredientName = ingredient.getText().trim().toLowerCase();
+            webIngredients.add(ingredientName);
+        }
+        System.out.println("Ingredients: " + webIngredients);
+        return webIngredients;
+    }
 
-	}
+    private List<String> matchIngredientsWithExcel(List<String> excelIngredients, List<String> webIngredients) {
+        List<String> matchedIngredients = new ArrayList<>();
 
-	private void extractIngredients() {
-		List<WebElement> ingredientsList = driver
-				.findElements(By.xpath("//div[@id='rcpinglist']//span[@itemprop='recipeIngredient']//a/span"));
-		List<String> webIngredients = new ArrayList<>();
+        // Match ingredients with Excel ingredients list (partial matches allowed)
+        for (String webIngredient : webIngredients) {
+            for (String excelIngredient : excelIngredients) {
+                if (webIngredient.contains(excelIngredient.toLowerCase())
+                        || excelIngredient.toLowerCase().contains(webIngredient)) {
+                    System.out.println("Ingredient match found: Web Ingredient - " + webIngredient
+                            + ", Excel Ingredient - " + excelIngredient);
+                    matchedIngredients.add(webIngredient);
+                }
+            }
+        }
+        return matchedIngredients;
+    }
 
-		for (WebElement ingredient : ingredientsList) {
-			String ingredientName = ingredient.getText().trim().toLowerCase();
-			webIngredients.add(ingredientName);
-		}
-		System.out.println("*****************" + webIngredients.toString());
-
-	}
+    private boolean navigateToNextPage() {
+        try {
+            WebElement nextPageIndex = driver.findElement(By.xpath("//*[@class='rescurrpg']/following-sibling::a"));
+            nextPageIndex.click();
+            return true;
+        } catch (Exception e) {
+            System.out.println("No more pages for this alphabet");
+            return false;
+        }
+    }
 
 	private void getRecipeCategory() {
 
 		try {
 			// je.executeScript("window.scrollBy(0,200)");
-			String receipeCategory = driver.findElement(By.xpath("//a[@itemprop='recipeCategory'][1]")).getText();
-			if (receipeCategory.toLowerCase().contains("lunch") || recipeName.toLowerCase().contains("lunch")) {
+			 recipeCategory = driver.findElement(By.xpath("//a[@itemprop='recipeCategory'][1]")).getText();
+			if (recipeCategory.toLowerCase().contains("lunch") || recipeName.toLowerCase().contains("lunch")) {
 				recipeCategory = "Lunch";
-			} else if (receipeCategory.toLowerCase().contains("breakfast")
+			} else if (recipeCategory.toLowerCase().contains("breakfast")
 					|| recipeName.toLowerCase().contains("breakfast")) {
 				recipeCategory = "Breakfast";
-			} else if (receipeCategory.toLowerCase().contains("dinner")
+			} else if (recipeCategory.toLowerCase().contains("dinner")
 					|| recipeName.toLowerCase().contains("dinner")) {
 				recipeCategory = "Dinner";
-			} else {
+			} else  if (recipeCategory.toLowerCase().contains("snack") || recipeName.toLowerCase().contains("snack")) {
 				recipeCategory = "Snack";
+			}else {
+				recipeCategory="NA";
 			}
 
 			System.out.println("Recipe Category is :" + recipeCategory);
@@ -216,7 +260,6 @@ public class LCHFPage extends ScrapedRecipesLCHF {
 	// Get the Food Category(Veg/non-veg/vegan/Jain)
 	private void getFoodCategory() {
 		try {
-
 			if (recipeName.contains("Vegan") || recipeTags.contains("Vegan")) {
 				foodCategory = "VEGAN";
 			} else if (recipeName.contains("Jain") || recipeTags.contains("Jain")) {
@@ -225,8 +268,12 @@ public class LCHFPage extends ScrapedRecipesLCHF {
 				foodCategory = "EGGITARIAN";
 			} else if (recipeName.contains("NonVeg") || recipeTags.contains("NonVeg")) {
 				foodCategory = "NONVEGETARIAN";
-			} else
+			} else  if (recipeName.contains("Vegetarian") || recipeTags.contains("Vegetarian")) {
 				foodCategory = "VEGETARIAN";
+			}else {
+				foodCategory="NA";
+			}
+				
 
 			System.out.println("Recipe Category is :" + foodCategory);
 
@@ -299,8 +346,11 @@ public class LCHFPage extends ScrapedRecipesLCHF {
 				cuisineCategory = "Uttar pradesh";
 			} else if (recipeName.contains("Delhi") || recipeTags.contains("Delhi")) {
 				cuisineCategory = "Delhi";
-			} else
+			}  else if (recipeName.contains("North Indian") || recipeTags.contains("North Indian")) {
 				cuisineCategory = "North Indian";
+			}else {
+				cuisineCategory = "NA";
+			}
 			System.out.println("Cuisine Category is :" + cuisineCategory);
 		} catch (NoSuchElementException e) {
 			System.out.println("Cuisine category element not found for recipe: " + recipeName);
@@ -367,47 +417,44 @@ public class LCHFPage extends ScrapedRecipesLCHF {
 			noOfServings = "Unknown";
 		}
 	}
-
-	private List<String> matchIngredientsWithExcel(List<String> excelIngredients) {
-		List<WebElement> ingredientsList = driver
-				.findElements(By.xpath("//div[@id='rcpinglist']//span[@itemprop='recipeIngredient']//a/span"));
-		List<String> webIngredients = new ArrayList<>();
-		List<String> matchedIngredients = new ArrayList<>();
-		List<String> unmatchedIngredients = new ArrayList<>();
-		boolean match = false;
-		for (WebElement ingredient : ingredientsList) {
-			String ingredientName = ingredient.getText().trim().toLowerCase();
-			webIngredients.add(ingredientName);
-		}
-//Add ingredients
-		// Match ingredients with Excel ingredients list (partial matches allowed)
-		for (String webIngredient : webIngredients) {
-			for (String excelIngredient : excelIngredients) {
-				if (webIngredient.contains(excelIngredient.toLowerCase())
-						|| excelIngredient.toLowerCase().contains(webIngredient)) {
-					System.out.println("Ingredient match found: Web Ingredient - " + webIngredient
-							+ ", Excel Ingredient - " + excelIngredient);
-					matchedIngredients.add(webIngredient);
-					match = true;
-				}
-				else {
-					unmatchedIngredients.add(webIngredient);
-					match = false;
-				}
-			}
-		}
+	private List<String> matchIngredientstoEliminateWithExcel(List<String> excelIngredients, List<String> webIngredients) {
 		
-		return matchedIngredients;
-	}
+		List<String> unmatchedIngredients = new ArrayList<>();
 
-	private boolean navigateToNextPage() {
-		try {
-			WebElement nextPageIndex = driver.findElement(By.xpath("//*[@class='rescurrpg']/following-sibling::a"));
-			nextPageIndex.click();
-			return true;
-		} catch (Exception e) {
-			System.out.println("No more pages for this alphabet");
-			return false;
-		}
-	}
+        // Match ingredients with Excel ingredients list (partial matches allowed)
+        for (String webIngredient : webIngredients) {
+            for (String excelIngredient : excelIngredients) {
+                if (!webIngredient.contains(excelIngredient.toLowerCase())
+                        || !excelIngredient.toLowerCase().contains(webIngredient)) {
+                    System.out.println("Ingredient match found: Web Ingredient - " + webIngredient
+                            + ", Excel Ingredient - " + excelIngredient);
+                    unmatchedIngredients.add(webIngredient);
+                }
+            }
+        }
+        return unmatchedIngredients;
 }
+//	public List<String> matchMethodFoodPRocessingWithExcel(List<String> excelIngredients) {
+//        // Find the preparation method on the web page
+//        String preparationMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']")).getText();
+//        
+//        // Convert the preparation method to lower case for case-insensitive matching
+//        String preparationMethodLower = preparationMethod.toLowerCase();
+//        
+//        List<String> matchFoodProcessing = new ArrayList<>();
+//
+//        // Iterate through each ingredient in the Excel list
+//        for (String excelIngredient : excelIngredients) {
+//            // Convert the excel ingredient to lower case for case-insensitive matching
+//            String excelIngredientLower = excelIngredient.toLowerCase();
+//            // Check if the preparation method contains the current ingredient
+//            if (preparationMethodLower.contains(excelIngredientLower)|| excelIngredient.toLowerCase().contains(preparationMethodLower)) {
+//                System.out.println("Match found: " + excelIngredient + " in preparation method.");
+//                matchFoodProcessing.add(excelIngredient); // Add the matched ingredient, not the whole preparation method text
+//            }
+//        }
+//
+//        return matchFoodProcessing;
+//    }
+
+	}
