@@ -15,12 +15,12 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.base.BaseClass;
-import com.pages.LCHFPage;
+import com.pages.Recipes_LCHFPage;
 import com.utilities.CreateExcel;
 
 public class ScrapedRecipesLCHF {
 
-	private LCHFPage lchfpage;
+	private Recipes_LCHFPage lchfpage;
 
 	@BeforeClass
 	public void createExcelFile() {
@@ -30,13 +30,13 @@ public class ScrapedRecipesLCHF {
 	@BeforeMethod
 	public void setup() throws Throwable {
 		BaseClass.browsersetup();
-		lchfpage = new LCHFPage();
+		lchfpage = new Recipes_LCHFPage();
 		lchfpage.readExcel(); // Ensure readExcel is called
 	}
 
 	@DataProvider(name = "alphabetDataProvider", parallel = false)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { { "B" } };
+		return new Object[][] { { "A" } };
 	}
 
 	@Test(dataProvider = "alphabetDataProvider")

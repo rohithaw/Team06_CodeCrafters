@@ -119,7 +119,7 @@ public class Recipes_LCHFPage {
                 List<String> webIngredients = extractIngredients();
                 List<String> matchedLchfAddIngredients = matchIngredientsWithExcel(excellchfAddIngredients,webIngredients);
 				List<String> matchedLchfEliminateIngredients = matchIngredientstoEliminateWithExcel(excellchfEliminateIngredients, webIngredients);
-				//List<String> matchedLchfFoodPRocessing = matchIngredientsWithExcel(excellchfFoodProcessingIngredients, webIngredients);
+				List<String> matchedLchfFoodPRocessing = matchMethodFoodPRocessingWithExcel(excellchfFoodProcessingIngredients);
 
                 String userDir = System.getProperty("user.dir");
                 String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
@@ -146,17 +146,17 @@ public class Recipes_LCHFPage {
                         System.out.println("Error writing to Excel: " + e.getMessage());
                     }
                 }
-//                if (!matchedLchfFoodPRocessing.isEmpty()) {
-//					try {
-//						ExcelWrite.writeToExcel("LCHFFoodPRocessing", id, recipeName, recipeCategory, foodCategory,
-//								String.join(", ", webIngredients),
-//								preparationTime, cookingTime, recipeTags,
-//								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
-//								driver.getCurrentUrl(), outputDataPath);
-//					} catch (IOException e) {
-//						System.out.println("Error writing to Excel: " + e.getMessage());
-//					}
-//				}
+                if (!matchedLchfFoodPRocessing.isEmpty()) {
+					try {
+						ExcelWrite.writeToExcel("LCHFFoodProcessing", id, recipeName, recipeCategory, foodCategory,
+								String.join(", ", webIngredients),
+								preparationTime, cookingTime, recipeTags,
+								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
+								driver.getCurrentUrl(), outputDataPath);
+					} catch (IOException e) {
+						System.out.println("Error writing to Excel: " + e.getMessage());
+					}
+				}
          
                 
                 int maxRetries = 3;
@@ -434,27 +434,27 @@ public class Recipes_LCHFPage {
         }
         return unmatchedIngredients;
 }
-//	public List<String> matchMethodFoodPRocessingWithExcel(List<String> excelIngredients) {
-//        // Find the preparation method on the web page
-//        String preparationMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']")).getText();
-//        
-//        // Convert the preparation method to lower case for case-insensitive matching
-//        String preparationMethodLower = preparationMethod.toLowerCase();
-//        
-//        List<String> matchFoodProcessing = new ArrayList<>();
-//
-//        // Iterate through each ingredient in the Excel list
-//        for (String excelIngredient : excelIngredients) {
-//            // Convert the excel ingredient to lower case for case-insensitive matching
-//            String excelIngredientLower = excelIngredient.toLowerCase();
-//            // Check if the preparation method contains the current ingredient
-//            if (preparationMethodLower.contains(excelIngredientLower)|| excelIngredient.toLowerCase().contains(preparationMethodLower)) {
-//                System.out.println("Match found: " + excelIngredient + " in preparation method.");
-//                matchFoodProcessing.add(excelIngredient); // Add the matched ingredient, not the whole preparation method text
-//            }
-//        }
-//
-//        return matchFoodProcessing;
-//    }
+	public List<String> matchMethodFoodPRocessingWithExcel(List<String> excelIngredients) {
+        // Find the preparation method on the web page
+        String preparationMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']")).getText();
+        
+        // Convert the preparation method to lower case for case-insensitive matching
+        String preparationMethodLower = preparationMethod.toLowerCase();
+        
+        List<String> matchFoodProcessing = new ArrayList<>();
+
+        // Iterate through each ingredient in the Excel list
+        for (String excelIngredient : excelIngredients) {
+            // Convert the excel ingredient to lower case for case-insensitive matching
+            String excelIngredientLower = excelIngredient.toLowerCase();
+            // Check if the preparation method contains the current ingredient
+            if (preparationMethodLower.contains(excelIngredientLower)|| excelIngredient.toLowerCase().contains(preparationMethodLower)) {
+                System.out.println("Match found: " + excelIngredient + " in preparation method.");
+                matchFoodProcessing.add(excelIngredient); // Add the matched ingredient, not the whole preparation method text
+            }
+        }
+
+        return matchFoodProcessing;
+    }
 
 	}
