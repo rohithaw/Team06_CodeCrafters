@@ -31,12 +31,12 @@ public class A_ZScrapedRecipes {
 	public void setup() throws Throwable {
 		BaseClass.browsersetup();
 		homePage = new Recipes_LFVPage();
-		homePage.readExcel(); // Ensure readExcel is called
+		homePage.readExcel(); 
 	}
 
 	@DataProvider(name = "alphabetDataProvider", parallel = false)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { { "D" } };
+		return new Object[][] { { "G" } };
 	}
 
 	@Test(dataProvider = "alphabetDataProvider")
