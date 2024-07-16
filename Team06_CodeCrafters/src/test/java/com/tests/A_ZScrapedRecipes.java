@@ -13,16 +13,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
 import com.base.BaseClass;
-
 import com.pages.Recipes_LFVPage;
 import com.utilities.CreateExcel;
 
 public class A_ZScrapedRecipes {
 
 	private Recipes_LFVPage homePage;
-	
 
 	@BeforeClass
 	public void createExcelFile() {
@@ -32,6 +29,7 @@ public class A_ZScrapedRecipes {
 	@BeforeMethod
 	public void setup() throws Throwable {
 		BaseClass.browsersetup();
+
 		homePage = new Recipes_LFVPage();
 		homePage.readExcel(); 
 		
@@ -44,14 +42,12 @@ public class A_ZScrapedRecipes {
 		return new Object[][] { { "L" }};
 	}
 
-	
 	@Test(dataProvider = "alphabetDataProvider")
 	public void clickAlphabetLink(String alphabet) throws Throwable {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
 		System.out.println("Clicked on alphabet: " + alphabet);
 		homePage.extractDataFromPages(BaseClass.getDriver(), alphabet);
-		
-		
+
 	}
 
 	private WebElement waitForElementToBeClickable(By locator) throws Throwable {
@@ -65,4 +61,6 @@ public class A_ZScrapedRecipes {
 	public void tearDown() {
 		BaseClass.tearDown();
 	}
+
 }
+
