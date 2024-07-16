@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 import com.tests.A_ZScrapedRecipes;
 import com.utilities.ConfigReader;
 import com.utilities.ExcelRead;
+import com.utilities.ExcelValueCheck;
 import com.utilities.ExcelWrite;
 
 public class Recipes_LFVPage extends A_ZScrapedRecipes {
@@ -54,8 +55,10 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 
     @Test
     public void extractDataFromPages(WebDriver driver, String alphabetPageTitle) throws Throwable {
-        this.driver = driver;
+    //public void extractDataFromPages(WebDriver driver) throws Throwable {
+        this.driver = driver;  
         extractRecipes();
+        
     }
 
     private void extractRecipes() throws Throwable {
@@ -93,6 +96,8 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
                 String recipeID = recipeCard.getAttribute("id");
                 String id = recipeID.replaceAll("[^0-9]", "");
                 System.out.println("Recipe Id: " + id);
+                
+               
 
                 // Getting recipe name
                 WebElement recipeNameElement = recipeCard.findElement(By.xpath(".//span[@class='rcc_recipename']/a"));
@@ -119,29 +124,40 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
                 String userDir = System.getProperty("user.dir");
                 String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
                 String outputDataPath = userDir + getPathread;
-                if (recipeName.contains("Vegan") || recipeTags.contains("Vegan")) {
-                if (!matchedVeganIngredients.isEmpty()) {
-                    try {
-                        ExcelWrite.writeToExcel("LFVAdd", id, recipeName, recipeCategory, foodCategory,
-                                String.join(", ", matchedVeganIngredients), preparationTime, cookingTime,
-                                recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
-                                nutrientValues, driver.getCurrentUrl(), outputDataPath);
-                    } catch (IOException e) {
-                        System.out.println("Error writing to Excel: " + e.getMessage());
-                    }
+
+                boolean recipeExistsinAddVeganConditions = ExcelValueCheck.recipeExistsInExcelCheck("LFVAdd", recipeID, outputDataPath);
+                boolean recipeExistsinAddNotVeganConditions = ExcelValueCheck.recipeExistsInExcelCheck("LFVAddNotFullyVegan", recipeID, outputDataPath);
+                
+                if (recipeExistsinAddVeganConditions || recipeExistsinAddNotVeganConditions) {
+                    System.out.println("Recipe already exists in excel: " + recipeID);
+                    return; // Exit the method to avoid writing duplicate recipes
                 }
-                }else {
-                if (!matchedNotFullyVeganIngredients.isEmpty()) {
-                    try {
-                        ExcelWrite.writeToExcel("LFVAddNotFullyVegan", id, recipeName, recipeCategory, foodCategory,
-                                String.join(", ", matchedNotFullyVeganIngredients), preparationTime, cookingTime,
-                                recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
-                                nutrientValues, driver.getCurrentUrl(), outputDataPath);
-                    } catch (IOException e) {
-                        System.out.println("Error writing to Excel: " + e.getMessage());
-                    }
-                }
-                }
+                
+                
+                    if (recipeName.contains("Vegan") || recipeTags.contains("Vegan")) {
+                        if (!matchedVeganIngredients.isEmpty()) {
+                            try {
+                                ExcelWrite.writeToExcel("LFVAdd", id, recipeName, recipeCategory, foodCategory,
+                                        String.join(", ", matchedVeganIngredients), preparationTime, cookingTime,
+                                        recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
+                                        nutrientValues, driver.getCurrentUrl(), outputDataPath);
+                            } catch (IOException e) {
+                                System.out.println("Error writing to Excel: " + e.getMessage());
+                            }
+                        }
+                    }   
+                        if (!matchedNotFullyVeganIngredients.isEmpty()) {
+                            try {
+                                ExcelWrite.writeToExcel("LFVAddNotFullyVegan", id, recipeName, recipeCategory, foodCategory,
+                                        String.join(", ", matchedNotFullyVeganIngredients), preparationTime, cookingTime,
+                                        recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
+                                        nutrientValues, driver.getCurrentUrl(), outputDataPath);
+                            } catch (IOException e) {
+                                System.out.println("Error writing to Excel: " + e.getMessage());
+                            }
+                        }
+                    
+                
                 
                 int maxRetries = 3;
                 int retryCount = 0;
@@ -193,6 +209,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
             }
         }
         return matchedIngredients;
+    	 
     }
 
     private boolean navigateToNextPage() {

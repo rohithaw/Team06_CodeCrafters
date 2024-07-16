@@ -39,11 +39,13 @@ public class A_ZScrapedRecipes {
 		return new Object[][] { { "G" } };
 	}
 
+	
 	@Test(dataProvider = "alphabetDataProvider")
 	public void clickAlphabetLink(String alphabet) throws Throwable {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
 		System.out.println("Clicked on alphabet: " + alphabet);
 		homePage.extractDataFromPages(BaseClass.getDriver(), alphabet);
+		
 	}
 
 	private WebElement waitForElementToBeClickable(By locator) throws Throwable {
