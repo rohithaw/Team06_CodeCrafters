@@ -15,12 +15,14 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.base.BaseClass;
+
 import com.pages.Recipes_LFVPage;
 import com.utilities.CreateExcel;
 
 public class A_ZScrapedRecipes {
 
 	private Recipes_LFVPage homePage;
+	
 
 	@BeforeClass
 	public void createExcelFile() {
@@ -32,11 +34,14 @@ public class A_ZScrapedRecipes {
 		BaseClass.browsersetup();
 		homePage = new Recipes_LFVPage();
 		homePage.readExcel(); 
+		
+		
 	}
 
+	//if you want to run in parallel set it to true
 	@DataProvider(name = "alphabetDataProvider", parallel = false)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { { "G" } };
+		return new Object[][] { { "L" }};
 	}
 
 	
@@ -45,6 +50,7 @@ public class A_ZScrapedRecipes {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
 		System.out.println("Clicked on alphabet: " + alphabet);
 		homePage.extractDataFromPages(BaseClass.getDriver(), alphabet);
+		
 		
 	}
 

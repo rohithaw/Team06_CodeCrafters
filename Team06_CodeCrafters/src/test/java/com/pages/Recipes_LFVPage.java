@@ -34,6 +34,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 	private String nutrientValues;
 	private String noOfServings;
 	String alphabetPageTitle = "";
+  private static final Object lock = new Object();
 
 	List<String> columnNamesVegan = Collections.singletonList("Add");
 	List<String> columnNamesNotFullyVegan = Collections.singletonList("To Add ( if not fully vegan)");
@@ -47,13 +48,15 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 		String inputDataPath = userDir + getPathread;
 
 		try {
+      synchronized (lock) {
 			excelVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesVegan, inputDataPath);
 			excelNotFullyVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesNotFullyVegan, inputDataPath);
 			excelEliminateIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
 					columnNamesEliminate, inputDataPath);
 			System.out.println("Add Ingredients List: " + excelVeganIngredients);
 			System.out.println("Not Fully Vegan Ingredients List: " + excelNotFullyVeganIngredients);
-		} catch (IOException e) {
+      }
+    } catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -143,33 +146,39 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 				if (recipeName.contains("Vegan") || recipeTags.contains("Vegan")) {
 					if (!matchedVeganIngredients.isEmpty()) {
 						try {
+               synchronized (lock){
 							ExcelWrite.writeToExcel("LFVAdd", id, recipeName, recipeCategory, foodCategory,
 									String.join(", ", matchedVeganIngredients), preparationTime, cookingTime,
 									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
 									nutrientValues, driver.getCurrentUrl(), outputDataPath);
-						} catch (IOException e) {
+               }
+            } catch (IOException e) {
 							System.out.println("Error writing to Excel: " + e.getMessage());
 						}
 					}
 				}   
 				if (!matchedNotFullyVeganIngredients.isEmpty()) {
 					try {
+             synchronized (lock){
 						ExcelWrite.writeToExcel("LFVAddNotFullyVegan", id, recipeName, recipeCategory, foodCategory,
 								String.join(", ", matchedNotFullyVeganIngredients), preparationTime, cookingTime,
 								recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
 								nutrientValues, driver.getCurrentUrl(), outputDataPath);
-					} catch (IOException e) {
+             }
+          } catch (IOException e) {
 						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
 				}
 
 				if (!unmatchedLFVIngredients.isEmpty()) {
 					try {
+             synchronized (lock){
 						ExcelWrite.writeToExcel("LFVEliminate", id, recipeName, recipeCategory, foodCategory,
 								String.join(", ", unmatchedLFVIngredients), preparationTime, cookingTime, recipeTags,
 								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
 								driver.getCurrentUrl(), outputDataPath);
-					} catch (IOException e) {
+             }
+          } catch (IOException e) {
 						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
 				}

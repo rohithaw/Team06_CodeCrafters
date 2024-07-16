@@ -3,23 +3,23 @@ package com.utilities;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 public class ExcelWrite {
+    private static final ReentrantLock lock = new ReentrantLock();
+
     public static void writeToExcel(String sheetName, String recipeId, String recipeName, String recipeCategory,
                                     String foodCategory, String ingredients, String preparationTime, String cookingTime, String tag,
                                     String noOfServings, String cuisineCategory, String recipeDescription, String preparationMethod,
                                     String nutrientValues, String recipeUrl, String filePath) throws IOException {
-        FileInputStream fileInputStream = null;
-        Workbook workbook = null;
-        FileOutputStream outputStream = null;
-
-        try {
-            fileInputStream = new FileInputStream(filePath);
-            workbook = WorkbookFactory.create(fileInputStream);
+        lock.lock();
+        try (FileInputStream fileInputStream = new FileInputStream(filePath);
+             Workbook workbook = WorkbookFactory.create(fileInputStream)) {
 
             Sheet sheet = workbook.getSheet(sheetName);
             if (sheet == null) {
@@ -47,34 +47,15 @@ public class ExcelWrite {
             row.createCell(12).setCellValue(nutrientValues);
             row.createCell(13).setCellValue(recipeUrl);
 
-            // Write the updated workbook to the file
-            outputStream = new FileOutputStream(filePath);
-            workbook.write(outputStream);
+            // Ensure workbook is written to file output stream
+            try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
+                workbook.write(outputStream);
+            }
+
         } catch (IOException e) {
             throw new IOException("Error writing to Excel file: " + e.getMessage(), e);
         } finally {
-            // Ensure resources are closed properly
-            if (fileInputStream != null) {
-                try {
-                    fileInputStream.close();
-                } catch (IOException e) {
-                    System.err.println("Error closing FileInputStream: " + e.getMessage());
-                }
-            }
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                } catch (IOException e) {
-                    System.err.println("Error closing FileOutputStream: " + e.getMessage());
-                }
-            }
-            if (workbook != null) {
-                try {
-                    workbook.close();
-                } catch (IOException e) {
-                    System.err.println("Error closing Workbook: " + e.getMessage());
-                }
-            }
+            lock.unlock();
         }
     }
 }
