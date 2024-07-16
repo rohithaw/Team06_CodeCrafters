@@ -15,12 +15,14 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.base.BaseClass;
-import com.pages.HomePage;
+
+import com.pages.Recipes_LCHFPage;
+
 import com.utilities.CreateExcel;
 
-public class A_ZScrapedRecipesLFV {
+public class A_ZScrapedRecipes {
 
-	private HomePage homePage;
+		private Recipes_LCHFPage lchfpage;
 
 	@BeforeClass
 	public void createExcelFile() {
@@ -30,20 +32,20 @@ public class A_ZScrapedRecipesLFV {
 	@BeforeMethod
 	public void setup() throws Throwable {
 		BaseClass.browsersetup();
-		homePage = new HomePage();
-		homePage.readExcel(); // Ensure readExcel is called
+		lchfpage = new Recipes_LCHFPage();
+		lchfpage.readExcel(); /// Ensure readExcel is called
 	}
 
 	@DataProvider(name = "alphabetDataProvider", parallel = false)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { { "D" } };
+		return new Object[][] { { "A" } };
 	}
 
 	@Test(dataProvider = "alphabetDataProvider")
 	public void clickAlphabetLink(String alphabet) throws Throwable {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
 		System.out.println("Clicked on alphabet: " + alphabet);
-		homePage.extractDataFromPages(BaseClass.getDriver(), alphabet);
+		lchfpage.extractDataFromPages(BaseClass.getDriver(), alphabet);
 	}
 
 	private WebElement waitForElementToBeClickable(By locator) throws Throwable {
