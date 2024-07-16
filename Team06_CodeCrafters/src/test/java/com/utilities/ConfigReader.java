@@ -1,9 +1,8 @@
 package com.utilities;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.FileInputStream;
+
 import java.util.Properties;
 
 
@@ -11,28 +10,26 @@ import java.util.Properties;
 public class ConfigReader {
 
 	private static Properties properties;
-	private static final String propertyFilePath = "src/test/resources/Config/config.properties";
+	private static final String propertyFilePath = "./src/test/resources/config/config.properties";
 
-	public static void loadProperty() {
-		BufferedReader reader;
-		try {
-			reader = new BufferedReader(new FileReader(propertyFilePath));
-			properties = new Properties();
+		static FileInputStream fis;
+		
+
+		public static String getGlobalValue(String key) throws Throwable {
 			try {
-				properties.load(reader);
-				reader.close();
-			} catch (IOException e) {
+				properties = new Properties();
+				fis = new FileInputStream(propertyFilePath);
+				properties.load(fis);
+				fis.close();
+			} catch (Exception e) {
 				e.printStackTrace();
+				throw new RuntimeException("Configuration.properties not found at " + propertyFilePath);
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Configuration.properties not found at " + propertyFilePath);
+			return properties.getProperty(key);
 		}
-	}
+	
 
-	public static String getProperty(String key) {
-		return properties.getProperty(key);
-	}
+	
 
 	public static long getImplicitWait() {
 		String implicitlyWait = properties.getProperty("implicitWait");
