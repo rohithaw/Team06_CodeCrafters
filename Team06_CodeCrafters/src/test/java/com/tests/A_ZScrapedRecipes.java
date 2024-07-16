@@ -13,14 +13,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
 import com.base.BaseClass;
-import com.pages.HomePage;
+import com.pages.Recipes_LFVPage;
 import com.utilities.CreateExcel;
 
-public class A_ZScrapedRecipesLFV {
+public class A_ZScrapedRecipes {
 
-	private HomePage homePage;
+	private Recipes_LFVPage homePage;
 
 	@BeforeClass
 	public void createExcelFile() {
@@ -30,13 +29,17 @@ public class A_ZScrapedRecipesLFV {
 	@BeforeMethod
 	public void setup() throws Throwable {
 		BaseClass.browsersetup();
-		homePage = new HomePage();
-		homePage.readExcel(); // Ensure readExcel is called
+
+		homePage = new Recipes_LFVPage();
+		homePage.readExcel(); 
+		
+		
 	}
 
+	//if you want to run in parallel set it to true
 	@DataProvider(name = "alphabetDataProvider", parallel = false)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { { "D" } };
+		return new Object[][] { { "L" }};
 	}
 
 	@Test(dataProvider = "alphabetDataProvider")
@@ -44,6 +47,7 @@ public class A_ZScrapedRecipesLFV {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
 		System.out.println("Clicked on alphabet: " + alphabet);
 		homePage.extractDataFromPages(BaseClass.getDriver(), alphabet);
+
 	}
 
 	private WebElement waitForElementToBeClickable(By locator) throws Throwable {
@@ -57,4 +61,6 @@ public class A_ZScrapedRecipesLFV {
 	public void tearDown() {
 		BaseClass.tearDown();
 	}
+
 }
+
