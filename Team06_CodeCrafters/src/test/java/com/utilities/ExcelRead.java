@@ -8,12 +8,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ExcelRead {
+    private static final ReentrantLock lock = new ReentrantLock();
 
     public static List<String> getDataFromExcel(String sheetName, List<String> columnNames, String inputDataPath) throws IOException {
         List<String> allColumnsData = new ArrayList<>();
-
+        lock.lock();
         try (FileInputStream fis = new FileInputStream(inputDataPath);
              XSSFWorkbook workbook = new XSSFWorkbook(fis)) {
 
@@ -33,19 +35,7 @@ public class ExcelRead {
             // Find the column indices for all column names
             int[] columnIndices = new int[columnNames.size()];
             for (int i = 0; i < columnNames.size(); i++) {
-                String columnName = columnNames.get(i);
-                int columnIndex = -1;
-                for (int j = 0; j < headerRow.getLastCellNum(); j++) {
-                    XSSFCell cell = headerRow.getCell(j, XSSFRow.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-                    if (cell != null && formatter.formatCellValue(cell).trim().equalsIgnoreCase(columnName)) {
-                        columnIndex = j;
-                        break;
-                    }
-                }
-                if (columnIndex == -1) {
-                    throw new IllegalArgumentException("Column with name " + columnName + " not found in the sheet " + sheetName);
-                }
-                columnIndices[i] = columnIndex;
+                columnIndices[i] = findColumnIndex(headerRow, columnNames.get(i), formatter);
             }
 
             // Read data for each column
@@ -61,8 +51,20 @@ public class ExcelRead {
                     }
                 }
             }
+        } finally {
+            lock.unlock();
         }
 
         return allColumnsData;
+    }
+
+    private static int findColumnIndex(XSSFRow headerRow, String columnName, DataFormatter formatter) {
+        for (int j = 0; j < headerRow.getLastCellNum(); j++) {
+            XSSFCell cell = headerRow.getCell(j, XSSFRow.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+            if (cell != null && formatter.formatCellValue(cell).trim().equalsIgnoreCase(columnName)) {
+                return j;
+            }
+        }
+        throw new IllegalArgumentException("Column with name " + columnName + " not found in the sheet");
     }
 }
