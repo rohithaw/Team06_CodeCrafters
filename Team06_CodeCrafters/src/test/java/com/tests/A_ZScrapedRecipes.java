@@ -36,7 +36,7 @@ public class A_ZScrapedRecipes {
 
 	@DataProvider(name = "alphabetDataProvider", parallel = false)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { { "G" } };
+		return new Object[][] { { "M" } };
 	}
 
 	

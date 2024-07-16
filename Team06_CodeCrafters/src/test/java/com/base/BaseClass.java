@@ -16,7 +16,8 @@ public class BaseClass {
 		options.addArguments("--disable-popup-blocking");
 		options.addArguments("--disable-notifications");
 		options.addArguments("--disable-extensions");
-		options.addArguments("disable-gpu"); // Applicable to Windows OS only
+		//options.addArguments("disable-gpu");// Applicable to Windows OS only
+		options.addArguments("--disable-gpu");// Applicable to Mac only
 		options.addArguments("blink-settings=imagesEnabled=false"); // Disable images
 		tlDriver.set(new ChromeDriver(options));
 		openWebsite();

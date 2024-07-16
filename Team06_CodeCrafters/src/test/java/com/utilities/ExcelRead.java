@@ -50,7 +50,7 @@ public class ExcelRead {
 
             // Read data for each column
             for (int columnIndex : columnIndices) {
-                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                for (int i = 2; i <= sheet.getLastRowNum(); i++) {
                     XSSFRow row = sheet.getRow(i);
                     if (row != null) {
                         XSSFCell cell = row.getCell(columnIndex, XSSFRow.MissingCellPolicy.RETURN_BLANK_AS_NULL);
