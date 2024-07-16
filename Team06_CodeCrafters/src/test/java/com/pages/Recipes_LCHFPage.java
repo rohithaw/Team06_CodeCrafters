@@ -9,7 +9,7 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+//import org.testng.annotations.Test;
 //import com.tests.A_ZScrapedRecipes;
 import com.utilities.ConfigReader;
 import com.utilities.ExcelRead;
@@ -119,8 +119,8 @@ public class Recipes_LCHFPage {
                 List<String> webIngredients = extractIngredients();
                 List<String> matchedLchfAddIngredients = matchIngredientsWithExcel(excellchfAddIngredients,webIngredients);
 				List<String> matchedLchfEliminateIngredients = matchIngredientstoEliminateWithExcel(excellchfEliminateIngredients, webIngredients);
-				List<String> matchedLchfFoodPRocessing = matchMethodFoodPRocessingWithExcel(excellchfFoodProcessingIngredients);
-
+				//List<String> matchedLchfFoodPRocessing = matchMethodFoodPRocessingWithExcel(excellchfFoodProcessingIngredients);
+				List<String> matchedLchfFoodPRocessing = matchwithtag(excellchfFoodProcessingIngredients);
                 String userDir = System.getProperty("user.dir");
                 String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
                 String outputDataPath = userDir + getPathread;
@@ -434,27 +434,45 @@ public class Recipes_LCHFPage {
         }
         return unmatchedIngredients;
 }
-	public List<String> matchMethodFoodPRocessingWithExcel(List<String> excelIngredients) {
-        // Find the preparation method on the web page
-        String preparationMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']")).getText();
-        
-        // Convert the preparation method to lower case for case-insensitive matching
-        String preparationMethodLower = preparationMethod.toLowerCase();
-        
-        List<String> matchFoodProcessing = new ArrayList<>();
-
-        // Iterate through each ingredient in the Excel list
-        for (String excelIngredient : excelIngredients) {
-            // Convert the excel ingredient to lower case for case-insensitive matching
+//	public List<String> matchMethodFoodPRocessingWithExcel(List<String> excelIngredients) {
+//        // preparation method web element
+//        String preparationMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']")).getText();
+//        
+//        //case-insensitive matching
+//        String preparationMethodLower = preparationMethod.toLowerCase();
+//        
+//        List<String> matchFoodProcessing = new ArrayList<>();
+//
+//        // Iterate through each ingredient in the Excel list
+//        for (String excelIngredient : excelIngredients) {
+//            // excel case-insensitive matching
+//            String excelIngredientLower = excelIngredient.toLowerCase();
+//            // Check if the preparation method contains the excel values
+//            if (preparationMethodLower.contains(excelIngredientLower)|| excelIngredient.toLowerCase().contains(preparationMethodLower)) {
+//                System.out.println("Match found: " + excelIngredient + " in preparation method.");
+//                matchFoodProcessing.add(excelIngredient); // Add the matched ingredient, not the whole preparation method text
+//            }
+//        }
+//
+//        return matchFoodProcessing;
+//    }
+	public List<String> matchwithtag(List<String> excelIngredients) {
+		//String receipeName = driver.findElement(By.xpath("//div[@class='recipelist']/article[\" + i + \"]/div[3]/span/a")).getText();
+		String tag = driver.findElement(By.id("recipe_tags")).getText();
+		String taglower = tag.toLowerCase();
+		List<String> tags = new ArrayList<>();
+		
+		for (String excelIngredient : excelIngredients) {
+            // excel ingredient for case-insensitive matching
             String excelIngredientLower = excelIngredient.toLowerCase();
-            // Check if the preparation method contains the current ingredient
-            if (preparationMethodLower.contains(excelIngredientLower)|| excelIngredient.toLowerCase().contains(preparationMethodLower)) {
+            // Check if the tags contains excel values
+            //&& receipeName.toLowerCase().contains(excelIngredientLower)
+            if (taglower.contains(excelIngredientLower)|| excelIngredient.toLowerCase().contains(taglower)) {
                 System.out.println("Match found: " + excelIngredient + " in preparation method.");
-                matchFoodProcessing.add(excelIngredient); // Add the matched ingredient, not the whole preparation method text
-            }
-        }
-
-        return matchFoodProcessing;
-    }
-
+                tags.add(excelIngredient); // Add the matched ingredient, not the whole preparation method text
+            }  
+        
+		}
+		return tags;
 	}
+}
