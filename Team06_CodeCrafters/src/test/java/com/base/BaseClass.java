@@ -37,10 +37,11 @@ public class BaseClass {
         driver.findElement(By.xpath("//a[text()='Recipe A To Z']")).click();
     }
 
-    public static void tearDown() {
-        if (tlDriver.get() != null) {
-            tlDriver.get().quit();
-            tlDriver.remove();
-        }
-    }
+	public static void tearDown() {
+		if (tlDriver.get() != null) {
+			tlDriver.get().quit();
+			tlDriver.remove();
+		}
+	}
 }
+
