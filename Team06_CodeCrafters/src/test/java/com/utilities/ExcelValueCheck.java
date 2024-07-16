@@ -2,6 +2,7 @@ package com.utilities;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -13,8 +14,10 @@ public class ExcelValueCheck {
 	// ********************** Method to get the row value of "Recipe ID" column
 	// based on a specific value*****************
 
+	private static final ReentrantLock lock = new ReentrantLock();
 
 	public static boolean recipeExistsInExcelCheck(String sheetName, String valueToCheck, String filePath) {
+		lock.lock();
 		try (FileInputStream fileInputStream = new FileInputStream(filePath);
 				XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream)) {
 
@@ -37,8 +40,10 @@ public class ExcelValueCheck {
 
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			lock.unlock();
 		}
+		return false;
 
-		return false; // Value not found in the first column
 	}
 }
