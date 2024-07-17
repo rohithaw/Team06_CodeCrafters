@@ -152,8 +152,12 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 						outputDataPath);
 				boolean recipeExistsinAddNotVeganConditions = ExcelValueCheck
 						.recipeExistsInExcelCheck("LFVAddNotFullyVegan", recipeID, outputDataPath);
-
-				if (recipeExistsinAddVeganConditions || recipeExistsinAddNotVeganConditions) {
+				boolean recipeNotExistsInEliminateConditions = ExcelValueCheck
+						.recipeExistsInExcelCheck("LFVEliminate", recipeID, outputDataPath);
+				boolean recipeExistsInRecipeToAvoidConditions = ExcelValueCheck
+						.recipeExistsInExcelCheck("LFVRecipesToAvoid", recipeID, outputDataPath);
+				
+				if (recipeExistsinAddVeganConditions || recipeExistsinAddNotVeganConditions || recipeNotExistsInEliminateConditions || recipeExistsInRecipeToAvoidConditions ) {
 					System.out.println("Recipe already exists in excel: " + recipeID);
 					return; // Exit the method to avoid writing duplicate recipes
 				}

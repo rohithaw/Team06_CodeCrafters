@@ -16,6 +16,7 @@ import org.testng.annotations.BeforeClass;
 
 import com.utilities.ConfigReader;
 import com.utilities.ExcelRead;
+import com.utilities.ExcelValueCheck;
 import com.utilities.ExcelWrite;
 
 public class Recipes_LCHFPage {
@@ -136,6 +137,17 @@ public class Recipes_LCHFPage {
 				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
 				String outputDataPath = userDir + getPathread;
 
+				boolean recipeExistsinAddLCHFConditions = ExcelValueCheck.recipeExistsInExcelCheck("LCHFAdd", recipeID,
+						outputDataPath);
+				boolean recipeExistsinFoodProcessingConditions = ExcelValueCheck
+						.recipeExistsInExcelCheck("LCHFFoodProcessing", recipeID, outputDataPath);
+				boolean recipeNotExistsInEliminateConditions = ExcelValueCheck
+						.recipeExistsInExcelCheck("LCHFEliminate", recipeID, outputDataPath);
+				if (recipeExistsinAddLCHFConditions || recipeExistsinFoodProcessingConditions || recipeNotExistsInEliminateConditions ) {
+					System.out.println("Recipe already exists in excel: " + recipeID);
+					return; // Exit the method to avoid writing duplicate recipes
+				}
+				
 				if (!matchedLchfAddIngredients.isEmpty()) {
 					try {
 						synchronized (lock) {

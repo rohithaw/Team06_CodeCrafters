@@ -15,6 +15,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import com.utilities.ConfigReader;
 import com.utilities.ExcelRead;
+import com.utilities.ExcelValueCheck;
 import com.utilities.ExcelWrite;
 
 public class Recipes_AllergyPage {
@@ -118,6 +119,13 @@ public class Recipes_AllergyPage {
 				String userDir = System.getProperty("user.dir");
 				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
 				String outputDataPath = userDir + getPathread;
+				boolean recipeNotExistsInAllergyConditions = ExcelValueCheck
+						.recipeExistsInExcelCheck("Allergy", recipeID, outputDataPath);
+				if (recipeNotExistsInAllergyConditions) {
+					System.out.println("Recipe already exists in excel: " + recipeID);
+					return; // Exit the method to avoid writing duplicate recipes
+				}
+				
 				if (!unmatchedAllergyIngredients.isEmpty()) {
 					try {
 						synchronized (lock) {
