@@ -19,6 +19,7 @@ import com.pages.Recipes_AllergyPage;
 import com.pages.Recipes_LCHFPage;
 import com.pages.Recipes_LFVPage;
 import com.utilities.CreateExcel;
+import com.utilities.LoggerLoad;
 
 public class A_ZScrapedRecipesLFV {
 
@@ -45,7 +46,7 @@ public class A_ZScrapedRecipesLFV {
 	@Test(dataProvider = "alphabetDataProvider")
 	public void clickAlphabetLink(String alphabet) throws Throwable {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
-		System.out.println("Clicked on alphabet: " + alphabet);
+		LoggerLoad.info("Clicked on alphabet: " + alphabet);
 		homePage.extractDataFromPages(BaseClass.getDriver(), alphabet);
 
 	}

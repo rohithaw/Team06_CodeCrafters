@@ -19,10 +19,12 @@ import com.pages.Recipes_AllergyPage;
 import com.pages.Recipes_LCHFPage;
 import com.pages.Recipes_LFVPage;
 import com.utilities.CreateExcel;
+import com.utilities.LoggerLoad;
 
 public class A_ZScrapedRecipesAllergy {
 
 	private Recipes_AllergyPage allergyPage;
+	
 
 	@BeforeClass
 	public void createExcelFile() {
@@ -45,7 +47,7 @@ public class A_ZScrapedRecipesAllergy {
 	@Test(dataProvider = "alphabetDataProvider")
 	public void clickAlphabetLink(String alphabet) throws Throwable {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
-		System.out.println("Clicked on alphabet: " + alphabet);
+		LoggerLoad.info("Clicked on alphabet: " + alphabet);
 		allergyPage.extractDataFromPages(BaseClass.getDriver(), alphabet);
 	}
 

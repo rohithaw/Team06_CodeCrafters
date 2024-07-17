@@ -15,7 +15,7 @@ public class ExcelTarConvertor {
         try {
             // Step 1: Read data from Excel and create temporary files
             createTarGzFilesForSheets(excelFile, tempDir);
-            System.out.println("Conversion complete.");
+            LoggerLoad.info("Conversion complete.");
         } catch (IOException e) {
             System.err.println("Error converting Excel to tar.gz: " + e.getMessage());
         }
