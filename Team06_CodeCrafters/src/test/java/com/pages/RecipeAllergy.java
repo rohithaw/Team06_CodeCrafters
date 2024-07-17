@@ -34,7 +34,8 @@ public class RecipeAllergy {
 	    private String noOfServings;
 	    String alphabetPageTitle = "";
 
-	    List<String> columnNamesAllergy = Collections.singletonList("Allergies (Bonus points)"); @BeforeClass
+	    List<String> columnNamesAllergy = Collections.singletonList("Allergies (Bonus points)");
+	    @BeforeClass
 	    public void readExcel() throws Throwable {
 	        String userDir = System.getProperty("user.dir");
 	        String getPathread = ConfigReader.getGlobalValue("inputExcelPath");

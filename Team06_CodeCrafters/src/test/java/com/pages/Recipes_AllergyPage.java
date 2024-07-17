@@ -34,7 +34,6 @@ public class Recipes_AllergyPage {
 	private String noOfServings;
 	String alphabetPageTitle = "";
 	private static final Object lock = new Object();
-
 	List<String> columnNamesAllergy = Collections.singletonList("Allergies (Bonus points)");
 
 	@BeforeClass

@@ -38,6 +38,7 @@ public class Recipes_LCHFPage {
 	String alphabetPageTitle = "";
 	private static final Object lock = new Object();
 
+	
 	List<String> columnNamesAdd = Collections.singletonList("Add");
 	List<String> columnNamesEliminate = Collections.singletonList("Eliminate");
 	List<String> columnNamesFoodPRocessing = Collections.singletonList("Food Processing");

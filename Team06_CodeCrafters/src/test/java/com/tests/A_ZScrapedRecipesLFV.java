@@ -34,7 +34,6 @@ public class A_ZScrapedRecipesLFV {
 		BaseClass.browsersetup();
 		homePage = new Recipes_LFVPage();
 		homePage.readExcel();
-
 	}
 
 	// if you want to run in parallel set it to true

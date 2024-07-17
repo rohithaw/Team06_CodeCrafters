@@ -47,7 +47,6 @@ public class A_ZScrapedRecipesAllergy {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
 		System.out.println("Clicked on alphabet: " + alphabet);
 		allergyPage.extractDataFromPages(BaseClass.getDriver(), alphabet);
-
 	}
 
 	private WebElement waitForElementToBeClickable(By locator) throws Throwable {

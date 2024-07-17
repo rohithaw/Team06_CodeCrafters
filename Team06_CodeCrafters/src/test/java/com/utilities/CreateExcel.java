@@ -15,7 +15,6 @@ public class CreateExcel {
 
 		String path = System.getProperty("user.dir");
 		Path filePath = Paths.get(path + "/src/test/resources/output/FinalRecipeScraping.xlsx");
-
 		// Check if the file exists
 		if (Files.exists(filePath)) {
 			System.out.println("Excel file already exists at: " + filePath);

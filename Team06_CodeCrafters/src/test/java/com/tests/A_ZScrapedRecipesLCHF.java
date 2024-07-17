@@ -32,6 +32,7 @@ public class A_ZScrapedRecipesLCHF {
 		lchfPage = new Recipes_LCHFPage();
 		lchfPage.readExcel();
 	}
+	
 
 	// if you want to run in parallel set it to true
 	@DataProvider(name = "alphabetDataProvider", parallel = false)
