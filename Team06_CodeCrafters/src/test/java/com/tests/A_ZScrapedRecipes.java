@@ -14,15 +14,22 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import com.base.BaseClass;
+import com.pages.RecipeEliminate;
 import com.pages.RecipeAllergy;
 import com.pages.Recipes_LFVPage;
 import com.utilities.CreateExcel;
 
 public class A_ZScrapedRecipes {
 
+
+	//private Recipes_LFVPage homePage;
+	private RecipeEliminate homepage;
+	
+
 	private RecipeAllergy allergy;
 
 	private Recipes_LFVPage homePage;
+
 
 	@BeforeClass
 	public void createExcelFile() {
@@ -32,6 +39,11 @@ public class A_ZScrapedRecipes {
 	@BeforeMethod
 	public void setup() throws Throwable {
 		BaseClass.browsersetup();
+
+		//homePage = new Recipes_LFVPage();
+		//homePage.readExcel(); 
+		homepage=new RecipeEliminate();
+
 
 		//homePage = new HomePage();
 		//allergyPage=new  AllergyPage();
@@ -43,6 +55,7 @@ public class A_ZScrapedRecipes {
 
 		homePage = new Recipes_LFVPage();
 		homePage.readExcel(); 
+
 		
 		
 
@@ -51,6 +64,7 @@ public class A_ZScrapedRecipes {
 	// if you want to run in parallel set it to true
 	@DataProvider(name = "alphabetDataProvider", parallel = false)
 	public Object[][] alphabetDataProvider() {
+
 
 		return new Object[][] { { "A" } };
 
@@ -65,7 +79,6 @@ public class A_ZScrapedRecipes {
 		allergy.extractDataFromPages(BaseClass.getDriver(), alphabet);
 
 		//homePage.extractDataFromPages(BaseClass.getDriver(), alphabet);
-
 
 	}
 
