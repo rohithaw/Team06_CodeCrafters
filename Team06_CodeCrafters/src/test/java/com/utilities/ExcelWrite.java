@@ -25,7 +25,7 @@ public class ExcelWrite {
             if (sheet == null) {
                 sheet = workbook.createSheet(sheetName);
             }
-            System.out.println("Sheet Name: " + sheet.getSheetName());
+            LoggerLoad.info("Sheet Name: " + sheet.getSheetName());
 
             // Create a new row
             int lastRowNum = sheet.getLastRowNum();

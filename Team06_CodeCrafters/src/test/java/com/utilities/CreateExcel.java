@@ -15,15 +15,14 @@ public class CreateExcel {
 
 		String path = System.getProperty("user.dir");
 		Path filePath = Paths.get(path + "/src/test/resources/output/FinalRecipeScraping.xlsx");
-
 		// Check if the file exists
 		if (Files.exists(filePath)) {
-			System.out.println("Excel file already exists at: " + filePath);
+			LoggerLoad.info("Excel file already exists at: " + filePath);
 			return;
 		}
 
 		try (Workbook workbook = new XSSFWorkbook()) {
-			String[] sheetNames = {"LFVEliminate", "LFVAdd","LFVAddNotFullyVegan","LFVRecipesToAvoid","LFVOptionalrecipes","LCHFEliminate","LCHFAdd","LCHFRecipesToAvoid","LCHFFoodProcessing","Allergy" };
+			String[] sheetNames = {"LFVEliminate", "LFVAdd","LFVAddNotFullyVegan","LFVRecipesToAvoid","LCHFEliminate","LCHFAdd","LCHFFoodProcessing","Allergy" };
 
 			for (String sheetName : sheetNames) {
 				Sheet sheet = workbook.createSheet(sheetName);
@@ -32,7 +31,7 @@ public class CreateExcel {
 
 			try (FileOutputStream fileOut = new FileOutputStream(filePath.toFile())) {
 				workbook.write(fileOut);
-				System.out.println("Excel sheet created successfully at: " + filePath);
+				LoggerLoad.info("Excel sheet created successfully at: " + filePath);
 			}
 
 		} catch (IOException e) {
