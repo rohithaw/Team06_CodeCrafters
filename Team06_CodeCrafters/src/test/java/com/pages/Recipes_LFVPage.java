@@ -22,6 +22,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 	private List<String> excelVeganIngredients;
 	private List<String> excelNotFullyVeganIngredients;
 	private List<String> excelEliminateIngredients;
+	private List<String> excelRecipeToAvoidList;
 	private String recipeName;
 	private String recipeCategory;
 	private String recipeTags;
@@ -39,7 +40,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 	List<String> columnNamesVegan = Collections.singletonList("Add");
 	List<String> columnNamesNotFullyVegan = Collections.singletonList("To Add ( if not fully vegan)");
 	List<String> columnNamesEliminate = Collections.singletonList("Eliminate");
-
+	List<String> columnNamesRecipeToAvoid = Collections.singletonList("Recipes to avoid");
 
 	@BeforeClass
 	public void readExcel() throws Throwable {
@@ -53,8 +54,11 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 			excelNotFullyVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesNotFullyVegan, inputDataPath);
 			excelEliminateIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
 					columnNamesEliminate, inputDataPath);
+			excelRecipeToAvoidList = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
+					columnNamesRecipeToAvoid, inputDataPath);
 			System.out.println("Add Ingredients List: " + excelVeganIngredients);
 			System.out.println("Not Fully Vegan Ingredients List: " + excelNotFullyVeganIngredients);
+			System.out.println("Recipe to Avoid List: " + excelRecipeToAvoidList);
       }
     } catch (IOException e) {
 			e.printStackTrace();
@@ -129,6 +133,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 				List<String> matchedVeganIngredients = matchIngredientsWithExcel(excelVeganIngredients, webIngredients);
 				List<String> matchedNotFullyVeganIngredients = matchIngredientsWithExcel(excelNotFullyVeganIngredients, webIngredients);
 				List<String> unmatchedLFVIngredients = matchIngredientsWithEliminateListforLFV(excelEliminateIngredients);
+				List<String> RecipeToAvoidFood = matchwithRecipeToAvoid(excelRecipeToAvoidList);
 
 				String userDir = System.getProperty("user.dir");
 				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
@@ -179,6 +184,17 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 								driver.getCurrentUrl(), outputDataPath);
              }
           } catch (IOException e) {
+						System.out.println("Error writing to Excel: " + e.getMessage());
+					}
+				}
+				
+				if (!RecipeToAvoidFood.isEmpty()) {
+					try {
+						ExcelWrite.writeToExcel("LFVRecipesToAvoid", id, recipeName, recipeCategory, foodCategory,
+								String.join(", ", webIngredients), preparationTime, cookingTime, recipeTags,
+								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
+								driver.getCurrentUrl(), outputDataPath);
+					} catch (IOException e) {
 						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
 				}
@@ -264,6 +280,31 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 		}
 		return unmatchedIngredients;
 	}
+	
+	//Recipe To Avoid Logic 
+	
+		public List<String> matchwithRecipeToAvoid(List<String> excelIngredients) {
+			String receipeName = driver.findElement(By.xpath("//span[@id='ctl00_cntrightpanel_lblRecipeName']")).getText();
+			String tag = driver.findElement(By.id("recipe_tags")).getText();
+			String taglower = tag.toLowerCase();
+			String receipeNamelower = receipeName.toLowerCase();
+			List<String> recipeToAvoid = new ArrayList<>();
+			
+			for (String excelIngredient : excelIngredients) {
+	            // excel ingredient for case-insensitive matching
+	            String excelIngredientLower = excelIngredient.toLowerCase();
+	            // Check if the tags contains excel values
+	            //&& receipeName.toLowerCase().contains(excelIngredientLower)
+	            if (taglower.contains(excelIngredientLower)|| excelIngredient.toLowerCase().contains(taglower) && receipeName.contains(excelIngredientLower) || 
+	            		excelIngredient.toLowerCase().contains(receipeNamelower)) {
+	                System.out.println("Match found: " + excelIngredient + " in Tag/Name.");
+	                recipeToAvoid.add(excelIngredient); // Add the matched ingredient, not the whole preparation method text
+	            }  
+	        
+			}
+			return recipeToAvoid;
+		}
+		
 
 
 
