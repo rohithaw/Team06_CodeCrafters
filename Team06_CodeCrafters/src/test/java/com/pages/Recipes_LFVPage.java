@@ -65,7 +65,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
     }
 
     private void extractRecipes() throws Throwable {
-        int pageIndex = 0;
+        int pageIndex = 9;
 
         while (true) {
             pageIndex++;
