@@ -2,7 +2,6 @@ package com.pages;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -13,17 +12,15 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.testng.annotations.BeforeClass;
-
+import org.testng.annotations.Test;
 import com.utilities.ConfigReader;
 import com.utilities.ExcelRead;
 import com.utilities.ExcelWrite;
 
-public class Recipes_LCHFPage {
+public class Recipes_AllergyPage {
 
 	private WebDriver driver;
-	private List<String> excellchfAddIngredients;
-	private List<String> excellchfEliminateIngredients;
-	private List<String> excellchfFoodProcessingIngredients;
+	private List<String> excelAllergyIngredients = new ArrayList<>();;
 	private String recipeName;
 	private String recipeCategory;
 	private String recipeTags;
@@ -37,11 +34,7 @@ public class Recipes_LCHFPage {
 	private String noOfServings;
 	String alphabetPageTitle = "";
 	private static final Object lock = new Object();
-
-	
-	List<String> columnNamesAdd = Collections.singletonList("Add");
-	List<String> columnNamesEliminate = Collections.singletonList("Eliminate");
-	List<String> columnNamesFoodPRocessing = Collections.singletonList("Food Processing");
+	List<String> columnNamesAllergy = Collections.singletonList("Allergies (Bonus points)");
 
 	@BeforeClass
 	public void readExcel() throws Throwable {
@@ -50,20 +43,15 @@ public class Recipes_LCHFPage {
 		String inputDataPath = userDir + getPathread;
 
 		try {
-			excellchfAddIngredients = ExcelRead.getDataFromExcel("Final list for LCHFElimination ", columnNamesAdd,
+			excelAllergyIngredients = ExcelRead.getDataFromExcel("Filter -1 Allergies - Bonus Poi", columnNamesAllergy,
 					inputDataPath);
-			excellchfEliminateIngredients = ExcelRead.getDataFromExcel("Final list for LCHFElimination ",
-					columnNamesEliminate, inputDataPath);
-			excellchfFoodProcessingIngredients = ExcelRead.getDataFromExcel("Final list for LCHFElimination ",
-					columnNamesFoodPRocessing, inputDataPath);
-			System.out.println("LCHF Add: " + excellchfAddIngredients);
-			System.out.println("LCHF Eliminate: " + excellchfEliminateIngredients);
-			System.out.println("LCHF Food Processing: " + excellchfFoodProcessingIngredients);
+			System.out.println("Allergy Ingredients List: " + excelAllergyIngredients);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+	@Test
 	public void extractDataFromPages(WebDriver driver, String alphabetPageTitle) throws Throwable {
 		this.driver = driver;
 		extractRecipes();
@@ -124,23 +112,18 @@ public class Recipes_LCHFPage {
 				getRecipeDescription();
 
 				List<String> webIngredients = extractIngredients();
-				List<String> matchedLchfAddIngredients = matchIngredientsWithExcel(excellchfAddIngredients,
+				List<String> unmatchedAllergyIngredients = getUnmatchedIngredients(excelAllergyIngredients,
 						webIngredients);
-
-				List<String> unmatchedLchfIngredients = getUnmatchedIngredients(excellchfEliminateIngredients,
-						webIngredients);
-				unmatchedLchfIngredients = eliminateRedundantUnmatchedIngredients(unmatchedLchfIngredients);
-				List<String> matchedLchfFoodPRocessing = matchWithTag(excellchfFoodProcessingIngredients);
-
+				unmatchedAllergyIngredients = eliminateRedundantUnmatchedIngredients(unmatchedAllergyIngredients);
 				String userDir = System.getProperty("user.dir");
 				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
 				String outputDataPath = userDir + getPathread;
-
-				if (!matchedLchfAddIngredients.isEmpty()) {
+				if (!unmatchedAllergyIngredients.isEmpty()) {
 					try {
 						synchronized (lock) {
-							ExcelWrite.writeToExcel("LCHFAdd", id, recipeName, recipeCategory, foodCategory,
-									String.join(", ", matchedLchfAddIngredients), preparationTime, cookingTime,
+
+							ExcelWrite.writeToExcel("Allergy", id, recipeName, recipeCategory, foodCategory,
+									String.join(", ", unmatchedAllergyIngredients), preparationTime, cookingTime,
 									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
 									nutrientValues, driver.getCurrentUrl(), outputDataPath);
 						}
@@ -149,45 +132,19 @@ public class Recipes_LCHFPage {
 					}
 				}
 
-				if (!unmatchedLchfIngredients.isEmpty()) {
-					try {
-						synchronized (lock) {
-							ExcelWrite.writeToExcel("LCHFEliminate", id, recipeName, recipeCategory, foodCategory,
-									String.join(", ", unmatchedLchfIngredients), preparationTime, cookingTime,
-									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
-									nutrientValues, driver.getCurrentUrl(), outputDataPath);
-						}
-					} catch (IOException e) {
-						System.out.println("Error writing to Excel: " + e.getMessage());
-					}
-				}
-				if (!matchedLchfFoodPRocessing.isEmpty()) {
-					try {
-						synchronized (lock) {
-							ExcelWrite.writeToExcel("LCHFFoodProcessing", id, recipeName, recipeCategory, foodCategory,
-									String.join(", ", webIngredients), preparationTime, cookingTime, recipeTags,
-									noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
-									driver.getCurrentUrl(), outputDataPath);
-						}
-					} catch (IOException e) {
-						System.out.println("Error writing to Excel: " + e.getMessage());
-					}
-				}
+			}
 
-				int maxRetries = 3;
-				int retryCount = 0;
-				while (retryCount < maxRetries) {
-					try {
-						driver.navigate().back();
-						driver.findElement(By.className("rcc_recipecard")).isDisplayed();
-						return; // Navigation successful, exit retry loop
-					} catch (NoSuchElementException e) {
-						System.out.println("Element not found, retrying...");
-						retryCount++;
-					}
+			int maxRetries = 3;
+			int retryCount = 0;
+			while (retryCount < maxRetries) {
+				try {
+					driver.navigate().back();
+					driver.findElement(By.className("rcc_recipecard")).isDisplayed();
+					return; // Navigation successful, exit retry loop
+				} catch (NoSuchElementException e) {
+					System.out.println("Element not found, retrying...");
+					retryCount++;
 				}
-			} else {
-				System.out.println("Index " + index + " out of bounds for recipe cards");
 			}
 		} catch (IndexOutOfBoundsException e) {
 			System.out.println("Index " + index + " out of bounds for recipe cards");
@@ -209,21 +166,27 @@ public class Recipes_LCHFPage {
 		return webIngredients;
 	}
 
-	private List<String> matchIngredientsWithExcel(List<String> excelIngredients, List<String> webIngredients) {
-		List<String> matchedIngredients = new ArrayList<>();
+	private List<String> getUnmatchedIngredients(List<String> excelIngredients, List<String> webIngredients) {
+		Set<String> excelSet = new HashSet<>(excelIngredients);
+		List<String> unmatchedIngredients = new ArrayList<>();
 
-		// Match ingredients with Excel ingredients list (partial matches allowed)
 		for (String webIngredient : webIngredients) {
-			for (String excelIngredient : excelIngredients) {
-				if (webIngredient.contains(excelIngredient.toLowerCase())
-						|| excelIngredient.toLowerCase().contains(webIngredient)) {
-					System.out.println("Ingredient match found: Web Ingredient - " + webIngredient
-							+ ", Excel Ingredient - " + excelIngredient);
-					matchedIngredients.add(webIngredient);
+			boolean found = false;
+			for (String excelIngredient : excelSet) {
+				if (webIngredient.toLowerCase().contains(excelIngredient.toLowerCase())) {
+					found = true;
+					break;
 				}
 			}
+			if (!found) {
+				unmatchedIngredients.add(webIngredient);
+			}
 		}
-		return matchedIngredients;
+		return unmatchedIngredients;
+	}
+
+	private List<String> eliminateRedundantUnmatchedIngredients(List<String> unmatchedIngredients) {
+		return new ArrayList<>(new HashSet<>(unmatchedIngredients));
 	}
 
 	private boolean navigateToNextPage() {
@@ -240,7 +203,6 @@ public class Recipes_LCHFPage {
 	private void getRecipeCategory() {
 
 		try {
-			// je.executeScript("window.scrollBy(0,200)");
 			recipeCategory = driver.findElement(By.xpath("//a[@itemprop='recipeCategory'][1]")).getText();
 			if (recipeCategory.toLowerCase().contains("lunch") || recipeName.toLowerCase().contains("lunch")) {
 				recipeCategory = "Lunch";
@@ -377,6 +339,7 @@ public class Recipes_LCHFPage {
 		try {
 			preparationTime = driver.findElement(By.xpath("//time[@itemprop='prepTime']")).getText();
 			System.out.println("Preperation Time is :" + preparationTime);
+			// je.executeScript("window.scrollBy(0,200)");
 		} catch (NoSuchElementException e) {
 			preparationTime = "Unknown";
 		}
@@ -428,51 +391,6 @@ public class Recipes_LCHFPage {
 		} catch (NoSuchElementException e) {
 			noOfServings = "Unknown";
 		}
-	}
-
-	public List<String> matchWithTag(List<String> excelIngredients) {
-		List<String> matchedIngredients = new ArrayList<>();
-		String tagText = driver.findElement(By.id("recipe_tags")).getText().toLowerCase();
-		String[] tagArray = tagText.split(",\\s*");
-		List<String> tags = Arrays.asList(tagArray);
-		for (String tag : tags) {
-			for (String excelIngredient : excelIngredients) {
-				if (normalize(tag).contains(normalize(excelIngredient))
-						|| normalize(excelIngredient).contains(normalize(tag))) {
-					System.out.println("Match found: " + excelIngredient + " in tags.");
-					matchedIngredients.add(excelIngredient);
-				}
-			}
-		}
-		return matchedIngredients;
-	}
-
-	private String normalize(String text) {
-
-		return text.toLowerCase().trim();
-	}
-
-	private List<String> getUnmatchedIngredients(List<String> excelIngredients, List<String> webIngredients) {
-		Set<String> excelSet = new HashSet<>(excelIngredients);
-		List<String> unmatchedIngredients = new ArrayList<>();
-
-		for (String webIngredient : webIngredients) {
-			boolean found = false;
-			for (String excelIngredient : excelSet) {
-				if (webIngredient.toLowerCase().contains(excelIngredient.toLowerCase())) {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				unmatchedIngredients.add(webIngredient);
-			}
-		}
-		return unmatchedIngredients;
-	}
-
-	private List<String> eliminateRedundantUnmatchedIngredients(List<String> unmatchedIngredients) {
-		return new ArrayList<>(new HashSet<>(unmatchedIngredients));
 	}
 
 }
