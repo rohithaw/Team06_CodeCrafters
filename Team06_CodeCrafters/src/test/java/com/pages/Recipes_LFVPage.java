@@ -109,7 +109,6 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 				System.out.println("Recipe Id: " + id);
 
 
-
 				// Getting recipe name
 				WebElement recipeNameElement = recipeCard.findElement(By.xpath(".//span[@class='rcc_recipename']/a"));
 				recipeName = recipeNameElement.getText();
