@@ -26,12 +26,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private WebDriver driver;
 	private List<String> excelVeganIngredients;
 	private List<String> excelNotFullyVeganIngredients;
-<<<<<<< HEAD
-	private List<String> excelEliminateIngredients;
-	private List<String> excelRecipeToAvoidList;
-=======
 	private List<String> excelEliminateIngredients = new ArrayList<>();
->>>>>>> 43041c1675fb3c010b261d6c0fccec85619c4db7
 	private String recipeName;
 	private String recipeCategory;
 	private String recipeTags;
@@ -52,10 +47,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	List<String> columnNamesEliminate = Collections.singletonList("Eliminate");
 	List<String> columnNamesRecipeToAvoid = Collections.singletonList("Recipes to avoid");
 
-<<<<<<< HEAD
-=======
 	
->>>>>>> 43041c1675fb3c010b261d6c0fccec85619c4db7
 	@BeforeClass
 	public void readExcel() throws Throwable {
 		String userDir = System.getProperty("user.dir");
@@ -63,19 +55,6 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 		String inputDataPath = userDir + getPathread;
 
 		try {
-<<<<<<< HEAD
-      synchronized (lock) {
-			excelVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesVegan, inputDataPath);
-			excelNotFullyVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesNotFullyVegan, inputDataPath);
-			excelEliminateIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
-					columnNamesEliminate, inputDataPath);
-			excelRecipeToAvoidList = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",columnNamesRecipeToAvoid, inputDataPath);
-			System.out.println("Add Ingredients List: " + excelVeganIngredients);
-			System.out.println("Not Fully Vegan Ingredients List: " + excelNotFullyVeganIngredients);
-			System.out.println("Recipe to Avoid List: " + excelRecipeToAvoidList);
-      }
-    } catch (IOException e) {
-=======
 			synchronized (lock) {
 				excelVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesVegan,
 						inputDataPath);
@@ -85,14 +64,13 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 						columnNamesEliminate, inputDataPath);
 				excelRecipeToAvoidList = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
 						columnNamesRecipeToAvoid, inputDataPath);
-				LoggerLoad.info("Recipe to Avoid List: " + excelRecipeToAvoidList);
+				System.out.println("Recipe to Avoid List: " + excelRecipeToAvoidList);
 
-				LoggerLoad.info("Add Ingredients List: " + excelVeganIngredients);
-				LoggerLoad.info("Not Fully Vegan Ingredients List: " + excelNotFullyVeganIngredients);
-				LoggerLoad.info("Eliminate Ingredients List: " + excelEliminateIngredients);
+				System.out.println("Add Ingredients List: " + excelVeganIngredients);
+				System.out.println("Not Fully Vegan Ingredients List: " + excelNotFullyVeganIngredients);
+				System.out.println("Eliminate Ingredients List: " + excelEliminateIngredients);
 			}
 		} catch (IOException e) {
->>>>>>> 43041c1675fb3c010b261d6c0fccec85619c4db7
 			e.printStackTrace();
 		}
 	}
@@ -109,17 +87,17 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 
 		while (true) {
 			pageIndex++;
-			LoggerLoad.info("Page Number: " + pageIndex);
+			System.out.println("Page Number: " + pageIndex);
 
 			try {
 				List<WebElement> recipeCards = driver.findElements(By.className("rcc_recipecard"));
-				LoggerLoad.info("No_of_recipes: " + recipeCards.size());
+				System.out.println("No_of_recipes: " + recipeCards.size());
 
 				for (int j = 0; j < recipeCards.size(); j++) {
 					processRecipe(j);
 				}
 			} catch (Exception e) {
-				LoggerLoad.info("Error while extracting data: " + e.getMessage());
+				System.out.println("Error while extracting data: " + e.getMessage());
 				break;
 			}
 
@@ -138,17 +116,12 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 				// Getting recipe id
 				String recipeID = recipeCard.getAttribute("id");
 				String id = recipeID.replaceAll("[^0-9]", "");
-<<<<<<< HEAD
 				System.out.println("Recipe Id: " + id);
-
-=======
-				LoggerLoad.info("Recipe Id: " + id);
->>>>>>> 43041c1675fb3c010b261d6c0fccec85619c4db7
 
 				// Getting recipe name
 				WebElement recipeNameElement = recipeCard.findElement(By.xpath(".//span[@class='rcc_recipename']/a"));
 				recipeName = recipeNameElement.getText();
-				LoggerLoad.info("Recipe Name: " + recipeName);
+				System.out.println("Recipe Name: " + recipeName);
 
 				// Clicking into the recipe link
 				recipeNameElement.click();
@@ -165,17 +138,11 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 
 				List<String> webIngredients = extractIngredients();
 				List<String> matchedVeganIngredients = matchIngredientsWithExcel(excelVeganIngredients, webIngredients);
-<<<<<<< HEAD
-				List<String> matchedNotFullyVeganIngredients = matchIngredientsWithExcel(excelNotFullyVeganIngredients, webIngredients);
-				List<String> unmatchedLFVIngredients = matchIngredientsWithEliminateListforLFV(excelEliminateIngredients);
-				List<String> RecipeToAvoidFood = matchwithRecipeToAvoid(excelRecipeToAvoidList);
-=======
 				List<String> matchedNotFullyVeganIngredients = matchIngredientsWithExcel(excelNotFullyVeganIngredients,
 						webIngredients);
 				List<String> unmatchedLFVIngredients = getUnmatchedIngredients(excelEliminateIngredients,
 						webIngredients);
 				unmatchedLFVIngredients = eliminateRedundantUnmatchedIngredients(unmatchedLFVIngredients);
->>>>>>> 43041c1675fb3c010b261d6c0fccec85619c4db7
 
 				List<String> RecipeToAvoidFood = matchwithRecipeToAvoid(excelRecipeToAvoidList);
 				String userDir = System.getProperty("user.dir");
@@ -192,7 +159,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 						.recipeExistsInExcelCheck("LFVRecipesToAvoid", recipeID, outputDataPath);
 				
 				if (recipeExistsinAddVeganConditions || recipeExistsinAddNotVeganConditions || recipeNotExistsInEliminateConditions || recipeExistsInRecipeToAvoidConditions ) {
-					LoggerLoad.info("Recipe already exists in excel: " + recipeID);
+					System.out.println("Recipe already exists in excel: " + recipeID);
 					return; // Exit the method to avoid writing duplicate recipes
 				}
 
@@ -206,7 +173,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 										nutrientValues, driver.getCurrentUrl(), outputDataPath);
 							}
 						} catch (IOException e) {
-							LoggerLoad.info("Error writing to Excel: " + e.getMessage());
+							System.out.println("Error writing to Excel: " + e.getMessage());
 						}
 					}
 				}
@@ -219,7 +186,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 									nutrientValues, driver.getCurrentUrl(), outputDataPath);
 						}
 					} catch (IOException e) {
-						LoggerLoad.info("Error writing to Excel: " + e.getMessage());
+						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
 				}
 				if (!unmatchedLFVIngredients.isEmpty()) {
@@ -230,17 +197,6 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
 									nutrientValues, driver.getCurrentUrl(), outputDataPath);
 						}
-					} catch (IOException e) {
-						LoggerLoad.info("Error writing to Excel: " + e.getMessage());
-					}
-				}
-				
-				if (!RecipeToAvoidFood.isEmpty()) {
-					try {
-						ExcelWrite.writeToExcel("LFVRecipesToAvoid", id, recipeName, recipeCategory, foodCategory,
-								String.join(", ", webIngredients), preparationTime, cookingTime, recipeTags,
-								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
-								driver.getCurrentUrl(), outputDataPath);
 					} catch (IOException e) {
 						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
@@ -255,7 +211,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 									driver.getCurrentUrl(), outputDataPath);
 						}
 					} catch (IOException e) {
-						LoggerLoad.info("Error writing to Excel: " + e.getMessage());
+						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
 				}
 
@@ -267,17 +223,17 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 						driver.findElement(By.className("rcc_recipecard")).isDisplayed();
 						return; // Navigation successful, exit retry loop
 					} catch (NoSuchElementException e) {
-						LoggerLoad.info("Element not found, retrying...");
+						System.out.println("Element not found, retrying...");
 						retryCount++;
 					}
 				}
 			} else {
-				LoggerLoad.info("Index " + index + " out of bounds for recipe cards");
+				System.out.println("Index " + index + " out of bounds for recipe cards");
 			}
 		} catch (IndexOutOfBoundsException e) {
-			LoggerLoad.info("Index " + index + " out of bounds for recipe cards");
+			System.out.println("Index " + index + " out of bounds for recipe cards");
 		} catch (Exception e) {
-			LoggerLoad.info("Error in processRecipe: " + e.getMessage());
+			System.out.println("Error in processRecipe: " + e.getMessage());
 		}
 	}
 
@@ -290,7 +246,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 			String ingredientName = ingredient.getText().trim().toLowerCase();
 			webIngredients.add(ingredientName);
 		}
-		LoggerLoad.info("Ingredients: " + webIngredients);
+		System.out.println("Ingredients: " + webIngredients);
 		return webIngredients;
 	}
 
@@ -302,7 +258,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 			for (String excelIngredient : excelIngredients) {
 				if (webIngredient.contains(excelIngredient.toLowerCase())
 						|| excelIngredient.toLowerCase().contains(webIngredient)) {
-					LoggerLoad.info("Ingredient match found: Web Ingredient - " + webIngredient
+					System.out.println("Ingredient match found: Web Ingredient - " + webIngredient
 							+ ", Excel Ingredient - " + excelIngredient);
 					matchedIngredients.add(webIngredient);
 				}
@@ -330,31 +286,6 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 		}
 		return unmatchedIngredients;
 	}
-	
-	//Recipe To Avoid Logic 
-	
-		public List<String> matchwithRecipeToAvoid(List<String> excelIngredients) {
-			String receipeName = driver.findElement(By.xpath("//span[@id='ctl00_cntrightpanel_lblRecipeName']")).getText();
-			String tag = driver.findElement(By.id("recipe_tags")).getText();
-			String taglower = tag.toLowerCase();
-			String receipeNamelower = receipeName.toLowerCase();
-			List<String> recipeToAvoid = new ArrayList<>();
-			
-			for (String excelIngredient : excelIngredients) {
-	            // excel ingredient for case-insensitive matching
-	            String excelIngredientLower = excelIngredient.toLowerCase();
-	            // Check if the tags contains excel values
-	            //&& receipeName.toLowerCase().contains(excelIngredientLower)
-	            if (taglower.contains(excelIngredientLower)|| excelIngredient.toLowerCase().contains(taglower) && receipeName.contains(excelIngredientLower) || 
-	            		excelIngredient.toLowerCase().contains(receipeNamelower)) {
-	                System.out.println("Match found: " + excelIngredient + " in Tag/Name.");
-	                recipeToAvoid.add(excelIngredient); // Add the matched ingredient, not the whole preparation method text
-	            }  
-	        
-			}
-			return recipeToAvoid;
-		}
-		
 
 	private List<String> eliminateRedundantUnmatchedIngredients(List<String> unmatchedIngredients) {
 		return new ArrayList<>(new HashSet<>(unmatchedIngredients));
@@ -371,7 +302,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 			for (String excelIngredient : excelIngredients) {
 				if (normalize(tag).contains(normalize(excelIngredient))
 						|| normalize(excelIngredient).contains(normalize(tag))) {
-					LoggerLoad.info("Match found: " + excelIngredient + " in tags.");
+					System.out.println("Match found: " + excelIngredient + " in tags.");
 					matchedIngredients.add(excelIngredient);
 					// Assuming you want to add all matching ingredients
 				}
@@ -390,7 +321,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 			nextPageIndex.click();
 			return true;
 		} catch (Exception e) {
-			LoggerLoad.info("No more pages for this alphabet");
+			System.out.println("No more pages for this alphabet");
 			return false;
 		}
 	}
@@ -413,9 +344,9 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 				recipeCategory = "NA";
 			}
 
-			LoggerLoad.info("Recipe Category is :" + recipeCategory);
+			System.out.println("Recipe Category is :" + recipeCategory);
 		} catch (NoSuchElementException e) {
-			LoggerLoad.info("Recipe category element not found for recipe: " + recipeName);
+			System.out.println("Recipe category element not found for recipe: " + recipeName);
 			recipeCategory = "Unknown";
 		}
 	}
@@ -423,7 +354,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private void getTags() {
 		try {
 			recipeTags = driver.findElement(By.id("recipe_tags")).getText();
-			LoggerLoad.info("Tags are : " + recipeTags);
+			System.out.println("Tags are : " + recipeTags);
 		} catch (NoSuchElementException e) {
 			recipeTags = "Unknown";
 		}
@@ -446,10 +377,10 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 				foodCategory = "NA";
 			}
 
-			LoggerLoad.info("Recipe Category is :" + foodCategory);
+			System.out.println("Recipe Category is :" + foodCategory);
 
 		} catch (NoSuchElementException e) {
-			LoggerLoad.info("Food category element not found for recipe: " + recipeName);
+			System.out.println("Food category element not found for recipe: " + recipeName);
 			foodCategory = "Unknown";
 		}
 	}
@@ -522,9 +453,9 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 			} else {
 				cuisineCategory = "NA";
 			}
-			LoggerLoad.info("Cuisine Category is :" + cuisineCategory);
+			System.out.println("Cuisine Category is :" + cuisineCategory);
 		} catch (NoSuchElementException e) {
-			LoggerLoad.info("Cuisine category element not found for recipe: " + recipeName);
+			System.out.println("Cuisine category element not found for recipe: " + recipeName);
 			cuisineCategory = "Unknown";
 
 		}
@@ -534,7 +465,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private void getPreparationTime() {
 		try {
 			preparationTime = driver.findElement(By.xpath("//time[@itemprop='prepTime']")).getText();
-			LoggerLoad.info("Preperation Time is :" + preparationTime);
+			System.out.println("Preperation Time is :" + preparationTime);
 			// je.executeScript("window.scrollBy(0,200)");
 		} catch (NoSuchElementException e) {
 			preparationTime = "Unknown";
@@ -544,7 +475,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private void getCookingTime() {
 		try {
 			cookingTime = driver.findElement(By.xpath("//time[@itemprop='cookTime']")).getText();
-			LoggerLoad.info("Cooking Time is :" + cookingTime);
+			System.out.println("Cooking Time is :" + cookingTime);
 		} catch (NoSuchElementException e) {
 			cookingTime = "Unknown";
 		}
@@ -553,7 +484,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private void getRecipeDescription() {
 		try {
 			recipeDescription = driver.findElement(By.xpath("//span[@id='ctl00_cntrightpanel_lblDesc']")).getText();
-			LoggerLoad.info("Recipe Description: " + recipeDescription);
+			System.out.println("Recipe Description: " + recipeDescription);
 		} catch (NoSuchElementException e) {
 			recipeDescription = "Unknown";
 		}
@@ -563,7 +494,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private void getPreparationMethod() {
 		try {
 			preparationMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']")).getText();
-			LoggerLoad.info("Preparation Method : " + preparationMethod);
+			System.out.println("Preparation Method : " + preparationMethod);
 
 		} catch (NoSuchElementException e) {
 			preparationMethod = "Unknown";
@@ -574,7 +505,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private void getNutrientValues() {
 		try {
 			nutrientValues = driver.findElement(By.xpath("//table[@id='rcpnutrients']/tbody")).getText();
-			LoggerLoad.info("Nutrient Values: " + nutrientValues);
+			System.out.println("Nutrient Values: " + nutrientValues);
 		} catch (NoSuchElementException e) {
 			nutrientValues = "Unknown";
 		}
@@ -583,7 +514,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private void getNoOfServings() {
 		try {
 			noOfServings = driver.findElement(By.id("ctl00_cntrightpanel_lblServes")).getText();
-			LoggerLoad.info("No of Servings: " + noOfServings);
+			System.out.println("No of Servings: " + noOfServings);
 		} catch (NoSuchElementException e) {
 			noOfServings = "Unknown";
 		}
