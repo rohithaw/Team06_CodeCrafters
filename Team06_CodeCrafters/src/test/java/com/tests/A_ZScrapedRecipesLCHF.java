@@ -16,6 +16,7 @@ import org.testng.annotations.Test;
 import com.base.BaseClass;
 import com.pages.Recipes_LCHFPage;
 import com.utilities.CreateExcel;
+import com.utilities.LoggerLoad;
 
 public class A_ZScrapedRecipesLCHF {
 
@@ -44,7 +45,7 @@ public class A_ZScrapedRecipesLCHF {
 	@Test(dataProvider = "alphabetDataProvider")
 	public void clickAlphabetLink(String alphabet) throws Throwable {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
-		System.out.println("Clicked on alphabet: " + alphabet);
+		LoggerLoad.info("Clicked on alphabet: " + alphabet);
 		lchfPage.extractDataFromPages(BaseClass.getDriver(), alphabet);
 
 	}
