@@ -17,7 +17,7 @@ public class RecipeAllergy {
 
 	
 
-	
+	//Recipe
 	    private WebDriver driver;
 	    private List<String> excelAllergyIngredients;
 	    //private List<String> excelNotFullyVeganIngredients;
