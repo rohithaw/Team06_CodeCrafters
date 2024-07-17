@@ -54,8 +54,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 			excelNotFullyVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesNotFullyVegan, inputDataPath);
 			excelEliminateIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
 					columnNamesEliminate, inputDataPath);
-			excelRecipeToAvoidList = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
-					columnNamesRecipeToAvoid, inputDataPath);
+			excelRecipeToAvoidList = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",columnNamesRecipeToAvoid, inputDataPath);
 			System.out.println("Add Ingredients List: " + excelVeganIngredients);
 			System.out.println("Not Fully Vegan Ingredients List: " + excelNotFullyVeganIngredients);
 			System.out.println("Recipe to Avoid List: " + excelRecipeToAvoidList);
