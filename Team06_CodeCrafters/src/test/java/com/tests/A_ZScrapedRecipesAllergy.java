@@ -15,15 +15,14 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.base.BaseClass;
-import com.pages.RecipeEliminate;
+import com.pages.Recipes_AllergyPage;
+import com.pages.Recipes_LCHFPage;
 import com.pages.Recipes_LFVPage;
 import com.utilities.CreateExcel;
 
-public class A_ZScrapedRecipes {
+public class A_ZScrapedRecipesAllergy {
 
-	//private Recipes_LFVPage homePage;
-	private RecipeEliminate homepage;
-	
+	private Recipes_AllergyPage allergyPage;
 
 	@BeforeClass
 	public void createExcelFile() {
@@ -33,27 +32,22 @@ public class A_ZScrapedRecipes {
 	@BeforeMethod
 	public void setup() throws Throwable {
 		BaseClass.browsersetup();
-		//homePage = new Recipes_LFVPage();
-		//homePage.readExcel(); 
-		homepage=new RecipeEliminate();
-		
-		
+		allergyPage = new Recipes_AllergyPage();
+		allergyPage.readExcel();
 	}
 
-	//if you want to run in parallel set it to true
+	// if you want to run in parallel set it to true
 	@DataProvider(name = "alphabetDataProvider", parallel = false)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { { "A" }};
+		return new Object[][] { { "A" } };
 	}
 
-	
 	@Test(dataProvider = "alphabetDataProvider")
 	public void clickAlphabetLink(String alphabet) throws Throwable {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
 		System.out.println("Clicked on alphabet: " + alphabet);
-		homepage.extractDataFromPages(BaseClass.getDriver(), alphabet);
-		
-		
+		allergyPage.extractDataFromPages(BaseClass.getDriver(), alphabet);
+
 	}
 
 	private WebElement waitForElementToBeClickable(By locator) throws Throwable {

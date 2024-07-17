@@ -2,7 +2,6 @@ package com.pages;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -14,18 +13,14 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import com.tests.A_ZScrapedRecipesLFV;
 import com.utilities.ConfigReader;
 import com.utilities.ExcelRead;
-import com.utilities.ExcelValueCheck;
 import com.utilities.ExcelWrite;
 
-public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
+public class Recipes_AllergyPage {
 
 	private WebDriver driver;
-	private List<String> excelVeganIngredients;
-	private List<String> excelNotFullyVeganIngredients;
-	private List<String> excelEliminateIngredients = new ArrayList<>();
+	private List<String> excelAllergyIngredients = new ArrayList<>();;
 	private String recipeName;
 	private String recipeCategory;
 	private String recipeTags;
@@ -38,13 +33,9 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private String nutrientValues;
 	private String noOfServings;
 	String alphabetPageTitle = "";
-	private List<String> excelRecipeToAvoidList;
 	private static final Object lock = new Object();
 
-	List<String> columnNamesVegan = Collections.singletonList("Add");
-	List<String> columnNamesNotFullyVegan = Collections.singletonList("To Add ( if not fully vegan)");
-	List<String> columnNamesEliminate = Collections.singletonList("Eliminate");
-	List<String> columnNamesRecipeToAvoid = Collections.singletonList("Recipes to avoid");
+	List<String> columnNamesAllergy = Collections.singletonList("Allergies (Bonus points)");
 
 	@BeforeClass
 	public void readExcel() throws Throwable {
@@ -53,21 +44,9 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 		String inputDataPath = userDir + getPathread;
 
 		try {
-			synchronized (lock) {
-				excelVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesVegan,
-						inputDataPath);
-				excelNotFullyVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
-						columnNamesNotFullyVegan, inputDataPath);
-				excelEliminateIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
-						columnNamesEliminate, inputDataPath);
-				excelRecipeToAvoidList = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
-						columnNamesRecipeToAvoid, inputDataPath);
-				System.out.println("Recipe to Avoid List: " + excelRecipeToAvoidList);
-
-				System.out.println("Add Ingredients List: " + excelVeganIngredients);
-				System.out.println("Not Fully Vegan Ingredients List: " + excelNotFullyVeganIngredients);
-				System.out.println("Eliminate Ingredients List: " + excelEliminateIngredients);
-			}
+			excelAllergyIngredients = ExcelRead.getDataFromExcel("Filter -1 Allergies - Bonus Poi", columnNamesAllergy,
+					inputDataPath);
+			System.out.println("Allergy Ingredients List: " + excelAllergyIngredients);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -77,7 +56,6 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	public void extractDataFromPages(WebDriver driver, String alphabetPageTitle) throws Throwable {
 		this.driver = driver;
 		extractRecipes();
-
 	}
 
 	private void extractRecipes() throws Throwable {
@@ -135,59 +113,18 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 				getRecipeDescription();
 
 				List<String> webIngredients = extractIngredients();
-				List<String> matchedVeganIngredients = matchIngredientsWithExcel(excelVeganIngredients, webIngredients);
-				List<String> matchedNotFullyVeganIngredients = matchIngredientsWithExcel(excelNotFullyVeganIngredients,
+				List<String> unmatchedAllergyIngredients = getUnmatchedIngredients(excelAllergyIngredients,
 						webIngredients);
-				List<String> unmatchedLFVIngredients = getUnmatchedIngredients(excelEliminateIngredients,
-						webIngredients);
-				unmatchedLFVIngredients = eliminateRedundantUnmatchedIngredients(unmatchedLFVIngredients);
-
-				List<String> RecipeToAvoidFood = matchwithRecipeToAvoid(excelRecipeToAvoidList);
+				unmatchedAllergyIngredients = eliminateRedundantUnmatchedIngredients(unmatchedAllergyIngredients);
 				String userDir = System.getProperty("user.dir");
 				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
 				String outputDataPath = userDir + getPathread;
-
-				boolean recipeExistsinAddVeganConditions = ExcelValueCheck.recipeExistsInExcelCheck("LFVAdd", recipeID,
-						outputDataPath);
-				boolean recipeExistsinAddNotVeganConditions = ExcelValueCheck
-						.recipeExistsInExcelCheck("LFVAddNotFullyVegan", recipeID, outputDataPath);
-
-				if (recipeExistsinAddVeganConditions || recipeExistsinAddNotVeganConditions) {
-					System.out.println("Recipe already exists in excel: " + recipeID);
-					return; // Exit the method to avoid writing duplicate recipes
-				}
-
-				if (recipeName.contains("Vegan") || recipeTags.contains("Vegan")) {
-					if (!matchedVeganIngredients.isEmpty()) {
-						try {
-							synchronized (lock) {
-								ExcelWrite.writeToExcel("LFVAdd", id, recipeName, recipeCategory, foodCategory,
-										String.join(", ", matchedVeganIngredients), preparationTime, cookingTime,
-										recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
-										nutrientValues, driver.getCurrentUrl(), outputDataPath);
-							}
-						} catch (IOException e) {
-							System.out.println("Error writing to Excel: " + e.getMessage());
-						}
-					}
-				}
-				if (!matchedNotFullyVeganIngredients.isEmpty()) {
+				if (!unmatchedAllergyIngredients.isEmpty()) {
 					try {
 						synchronized (lock) {
-							ExcelWrite.writeToExcel("LFVAddNotFullyVegan", id, recipeName, recipeCategory, foodCategory,
-									String.join(", ", matchedNotFullyVeganIngredients), preparationTime, cookingTime,
-									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
-									nutrientValues, driver.getCurrentUrl(), outputDataPath);
-						}
-					} catch (IOException e) {
-						System.out.println("Error writing to Excel: " + e.getMessage());
-					}
-				}
-				if (!unmatchedLFVIngredients.isEmpty()) {
-					try {
-						synchronized (lock) {
-							ExcelWrite.writeToExcel("LFVEliminate", id, recipeName, recipeCategory, foodCategory,
-									String.join(", ", unmatchedLFVIngredients), preparationTime, cookingTime,
+
+							ExcelWrite.writeToExcel("Allergy", id, recipeName, recipeCategory, foodCategory,
+									String.join(", ", unmatchedAllergyIngredients), preparationTime, cookingTime,
 									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
 									nutrientValues, driver.getCurrentUrl(), outputDataPath);
 						}
@@ -196,33 +133,19 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 					}
 				}
 
-				if (!RecipeToAvoidFood.isEmpty()) {
-					try {
-						synchronized (lock) {
-							ExcelWrite.writeToExcel("LFVRecipesToAvoid", id, recipeName, recipeCategory, foodCategory,
-									String.join(", ", webIngredients), preparationTime, cookingTime, recipeTags,
-									noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
-									driver.getCurrentUrl(), outputDataPath);
-						}
-					} catch (IOException e) {
-						System.out.println("Error writing to Excel: " + e.getMessage());
-					}
-				}
+			}
 
-				int maxRetries = 3;
-				int retryCount = 0;
-				while (retryCount < maxRetries) {
-					try {
-						driver.navigate().back();
-						driver.findElement(By.className("rcc_recipecard")).isDisplayed();
-						return; // Navigation successful, exit retry loop
-					} catch (NoSuchElementException e) {
-						System.out.println("Element not found, retrying...");
-						retryCount++;
-					}
+			int maxRetries = 3;
+			int retryCount = 0;
+			while (retryCount < maxRetries) {
+				try {
+					driver.navigate().back();
+					driver.findElement(By.className("rcc_recipecard")).isDisplayed();
+					return; // Navigation successful, exit retry loop
+				} catch (NoSuchElementException e) {
+					System.out.println("Element not found, retrying...");
+					retryCount++;
 				}
-			} else {
-				System.out.println("Index " + index + " out of bounds for recipe cards");
 			}
 		} catch (IndexOutOfBoundsException e) {
 			System.out.println("Index " + index + " out of bounds for recipe cards");
@@ -242,24 +165,6 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 		}
 		System.out.println("Ingredients: " + webIngredients);
 		return webIngredients;
-	}
-
-	private List<String> matchIngredientsWithExcel(List<String> excelIngredients, List<String> webIngredients) {
-		List<String> matchedIngredients = new ArrayList<>();
-
-		// Match ingredients with Excel ingredients list (partial matches allowed)
-		for (String webIngredient : webIngredients) {
-			for (String excelIngredient : excelIngredients) {
-				if (webIngredient.contains(excelIngredient.toLowerCase())
-						|| excelIngredient.toLowerCase().contains(webIngredient)) {
-					System.out.println("Ingredient match found: Web Ingredient - " + webIngredient
-							+ ", Excel Ingredient - " + excelIngredient);
-					matchedIngredients.add(webIngredient);
-				}
-			}
-		}
-		return matchedIngredients;
-
 	}
 
 	private List<String> getUnmatchedIngredients(List<String> excelIngredients, List<String> webIngredients) {
@@ -285,30 +190,6 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 		return new ArrayList<>(new HashSet<>(unmatchedIngredients));
 	}
 
-	public List<String> matchwithRecipeToAvoid(List<String> excelIngredients) {
-		List<String> matchedIngredients = new ArrayList<>();
-		// Extract tags from the web page
-		String tagText = driver.findElement(By.id("recipe_tags")).getText().toLowerCase();
-		String[] tagArray = tagText.split(",\\s*"); // Split by comma and trim whitespace
-		List<String> tags = Arrays.asList(tagArray);
-		// Match tags with Excel ingredients list (partial matches allowed)
-		for (String tag : tags) {
-			for (String excelIngredient : excelIngredients) {
-				if (normalize(tag).contains(normalize(excelIngredient))
-						|| normalize(excelIngredient).contains(normalize(tag))) {
-					System.out.println("Match found: " + excelIngredient + " in tags.");
-					matchedIngredients.add(excelIngredient);
-					// Assuming you want to add all matching ingredients
-				}
-			}
-		}
-		return matchedIngredients;
-	}
-
-	private String normalize(String text) {
-		return text.toLowerCase().trim();
-	}
-
 	private boolean navigateToNextPage() {
 		try {
 			WebElement nextPageIndex = driver.findElement(By.xpath("//*[@class='rescurrpg']/following-sibling::a"));
@@ -323,7 +204,6 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private void getRecipeCategory() {
 
 		try {
-			// je.executeScript("window.scrollBy(0,200)");
 			recipeCategory = driver.findElement(By.xpath("//a[@itemprop='recipeCategory'][1]")).getText();
 			if (recipeCategory.toLowerCase().contains("lunch") || recipeName.toLowerCase().contains("lunch")) {
 				recipeCategory = "Lunch";
@@ -513,4 +393,5 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 			noOfServings = "Unknown";
 		}
 	}
+
 }
