@@ -53,6 +53,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 					columnNamesEliminate, inputDataPath);
 			System.out.println("Add Ingredients List: " + excelVeganIngredients);
 			System.out.println("Not Fully Vegan Ingredients List: " + excelNotFullyVeganIngredients);
+			System.out.println("Eliminate Ingredients List: " + excelEliminateIngredients);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -125,7 +126,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 				List<String> webIngredients = extractIngredients();
 				List<String> matchedVeganIngredients = matchIngredientsWithExcel(excelVeganIngredients, webIngredients);
 				List<String> matchedNotFullyVeganIngredients = matchIngredientsWithExcel(excelNotFullyVeganIngredients, webIngredients);
-				List<String> unmatchedLFVIngredients = matchIngredientsWithEliminateListforLFV(excelEliminateIngredients);
+				List<String> unmatchedLFVIngredients = matchIngredientsWithEliminateListforLFV(excelEliminateIngredients, webIngredients);
 
 				String userDir = System.getProperty("user.dir");
 				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
@@ -173,10 +174,6 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
 				}
-
-
-
-
 
 
 				int maxRetries = 3;
@@ -233,16 +230,8 @@ public class Recipes_LFVPage extends A_ZScrapedRecipes {
 	}
 
 	//Eliminate logic
-	private List<String> matchIngredientsWithEliminateListforLFV(List<String> excelIngredients) {
-		List<WebElement> ingredientsList = driver
-				.findElements(By.xpath("//div[@id='rcpinglist']//span[@itemprop='recipeIngredient']//a/span"));
-		List<String> webIngredients = new ArrayList<>();
+	private List<String> matchIngredientsWithEliminateListforLFV(List<String> excelIngredients, List<String> webIngredients) {
 		List<String> unmatchedIngredients = new ArrayList<>();
-
-		for (WebElement ingredient : ingredientsList) {
-			String ingredientName = ingredient.getText().trim().toLowerCase();
-			webIngredients.add(ingredientName);
-		}
 		for (String webIngredient : webIngredients) {
 			for (String excelIngredient : excelIngredients) {
 				if (!webIngredient.contains(excelIngredient.toLowerCase())
