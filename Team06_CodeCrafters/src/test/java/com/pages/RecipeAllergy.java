@@ -34,7 +34,7 @@ public class RecipeAllergy {
 	    private String noOfServings;
 	    String alphabetPageTitle = "";
 
-	    List<String> columnNamesAllergy = Collections.singletonList("Allergies (Bonus points) "); @BeforeClass
+	    List<String> columnNamesAllergy = Collections.singletonList("Allergies (Bonus points)"); @BeforeClass
 	    public void readExcel() throws Throwable {
 	        String userDir = System.getProperty("user.dir");
 	        String getPathread = ConfigReader.getGlobalValue("inputExcelPath");
@@ -120,7 +120,7 @@ public class RecipeAllergy {
 	               // if (recipeName.contains("Vegan") || recipeTags.contains("Vegan")) {
 	                if (!matchedAllergyIngredients.isEmpty()) {
 	                    try {
-	                        ExcelWrite.writeToExcel("Allergy", id, recipeName, recipeCategory, foodCategory,
+	                        ExcelWrite.writeToExcel("LFVAllergy", id, recipeName, recipeCategory, foodCategory,
 	                                String.join(", ", matchedAllergyIngredients), preparationTime, cookingTime,
 	                                recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
 	                                nutrientValues, driver.getCurrentUrl(), outputDataPath);
@@ -184,7 +184,7 @@ public class RecipeAllergy {
 	        for (String webIngredient : webIngredients) {
 	            for (String excelIngredient : excelIngredients) {
 	                if (!webIngredient.contains(excelIngredient.toLowerCase())
-	                        || !excelIngredient.toLowerCase().contains(webIngredient)) {
+	                        && !excelIngredient.toLowerCase().contains(webIngredient)) {
 	                    System.out.println("Ingredient match not found: Web Ingredient - " + webIngredient
 	                            + ", Excel Ingredient - " + excelIngredient);
 	                    matchedIngredients.add(webIngredient);
