@@ -357,6 +357,7 @@ public class RecipeEliminate {
 			System.out.println("Food category element not found for recipe: " + recipeName);
 			foodCategory = "Unknown";
 		}
+		
 	}
 
 	private void getcuisineCategory() {
