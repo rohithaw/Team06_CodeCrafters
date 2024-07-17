@@ -26,7 +26,12 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	private WebDriver driver;
 	private List<String> excelVeganIngredients;
 	private List<String> excelNotFullyVeganIngredients;
+<<<<<<< HEAD
+	private List<String> excelEliminateIngredients;
+	private List<String> excelRecipeToAvoidList;
+=======
 	private List<String> excelEliminateIngredients = new ArrayList<>();
+>>>>>>> 43041c1675fb3c010b261d6c0fccec85619c4db7
 	private String recipeName;
 	private String recipeCategory;
 	private String recipeTags;
@@ -47,7 +52,10 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 	List<String> columnNamesEliminate = Collections.singletonList("Eliminate");
 	List<String> columnNamesRecipeToAvoid = Collections.singletonList("Recipes to avoid");
 
+<<<<<<< HEAD
+=======
 	
+>>>>>>> 43041c1675fb3c010b261d6c0fccec85619c4db7
 	@BeforeClass
 	public void readExcel() throws Throwable {
 		String userDir = System.getProperty("user.dir");
@@ -55,6 +63,19 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 		String inputDataPath = userDir + getPathread;
 
 		try {
+<<<<<<< HEAD
+      synchronized (lock) {
+			excelVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesVegan, inputDataPath);
+			excelNotFullyVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesNotFullyVegan, inputDataPath);
+			excelEliminateIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",
+					columnNamesEliminate, inputDataPath);
+			excelRecipeToAvoidList = ExcelRead.getDataFromExcel("Final list for LFV Elimination ",columnNamesRecipeToAvoid, inputDataPath);
+			System.out.println("Add Ingredients List: " + excelVeganIngredients);
+			System.out.println("Not Fully Vegan Ingredients List: " + excelNotFullyVeganIngredients);
+			System.out.println("Recipe to Avoid List: " + excelRecipeToAvoidList);
+      }
+    } catch (IOException e) {
+=======
 			synchronized (lock) {
 				excelVeganIngredients = ExcelRead.getDataFromExcel("Final list for LFV Elimination ", columnNamesVegan,
 						inputDataPath);
@@ -71,6 +92,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 				LoggerLoad.info("Eliminate Ingredients List: " + excelEliminateIngredients);
 			}
 		} catch (IOException e) {
+>>>>>>> 43041c1675fb3c010b261d6c0fccec85619c4db7
 			e.printStackTrace();
 		}
 	}
@@ -116,7 +138,12 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 				// Getting recipe id
 				String recipeID = recipeCard.getAttribute("id");
 				String id = recipeID.replaceAll("[^0-9]", "");
+<<<<<<< HEAD
+				System.out.println("Recipe Id: " + id);
+
+=======
 				LoggerLoad.info("Recipe Id: " + id);
+>>>>>>> 43041c1675fb3c010b261d6c0fccec85619c4db7
 
 				// Getting recipe name
 				WebElement recipeNameElement = recipeCard.findElement(By.xpath(".//span[@class='rcc_recipename']/a"));
@@ -138,11 +165,17 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 
 				List<String> webIngredients = extractIngredients();
 				List<String> matchedVeganIngredients = matchIngredientsWithExcel(excelVeganIngredients, webIngredients);
+<<<<<<< HEAD
+				List<String> matchedNotFullyVeganIngredients = matchIngredientsWithExcel(excelNotFullyVeganIngredients, webIngredients);
+				List<String> unmatchedLFVIngredients = matchIngredientsWithEliminateListforLFV(excelEliminateIngredients);
+				List<String> RecipeToAvoidFood = matchwithRecipeToAvoid(excelRecipeToAvoidList);
+=======
 				List<String> matchedNotFullyVeganIngredients = matchIngredientsWithExcel(excelNotFullyVeganIngredients,
 						webIngredients);
 				List<String> unmatchedLFVIngredients = getUnmatchedIngredients(excelEliminateIngredients,
 						webIngredients);
 				unmatchedLFVIngredients = eliminateRedundantUnmatchedIngredients(unmatchedLFVIngredients);
+>>>>>>> 43041c1675fb3c010b261d6c0fccec85619c4db7
 
 				List<String> RecipeToAvoidFood = matchwithRecipeToAvoid(excelRecipeToAvoidList);
 				String userDir = System.getProperty("user.dir");
@@ -199,6 +232,17 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 						}
 					} catch (IOException e) {
 						LoggerLoad.info("Error writing to Excel: " + e.getMessage());
+					}
+				}
+				
+				if (!RecipeToAvoidFood.isEmpty()) {
+					try {
+						ExcelWrite.writeToExcel("LFVRecipesToAvoid", id, recipeName, recipeCategory, foodCategory,
+								String.join(", ", webIngredients), preparationTime, cookingTime, recipeTags,
+								noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
+								driver.getCurrentUrl(), outputDataPath);
+					} catch (IOException e) {
+						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
 				}
 
@@ -286,6 +330,31 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 		}
 		return unmatchedIngredients;
 	}
+	
+	//Recipe To Avoid Logic 
+	
+		public List<String> matchwithRecipeToAvoid(List<String> excelIngredients) {
+			String receipeName = driver.findElement(By.xpath("//span[@id='ctl00_cntrightpanel_lblRecipeName']")).getText();
+			String tag = driver.findElement(By.id("recipe_tags")).getText();
+			String taglower = tag.toLowerCase();
+			String receipeNamelower = receipeName.toLowerCase();
+			List<String> recipeToAvoid = new ArrayList<>();
+			
+			for (String excelIngredient : excelIngredients) {
+	            // excel ingredient for case-insensitive matching
+	            String excelIngredientLower = excelIngredient.toLowerCase();
+	            // Check if the tags contains excel values
+	            //&& receipeName.toLowerCase().contains(excelIngredientLower)
+	            if (taglower.contains(excelIngredientLower)|| excelIngredient.toLowerCase().contains(taglower) && receipeName.contains(excelIngredientLower) || 
+	            		excelIngredient.toLowerCase().contains(receipeNamelower)) {
+	                System.out.println("Match found: " + excelIngredient + " in Tag/Name.");
+	                recipeToAvoid.add(excelIngredient); // Add the matched ingredient, not the whole preparation method text
+	            }  
+	        
+			}
+			return recipeToAvoid;
+		}
+		
 
 	private List<String> eliminateRedundantUnmatchedIngredients(List<String> unmatchedIngredients) {
 		return new ArrayList<>(new HashSet<>(unmatchedIngredients));
