@@ -182,7 +182,7 @@ public class Recipes_AllergyPage {
 		for (String webIngredient : webIngredients) {
 			boolean found = false;
 			for (String excelIngredient : excelSet) {
-				if (webIngredient.toLowerCase().contains(excelIngredient.toLowerCase())) {
+				if (webIngredient.toLowerCase().contains(excelIngredient.toLowerCase()) || excelIngredient.toLowerCase().contains(webIngredient)) {
 					found = true;
 					break;
 				}

@@ -17,7 +17,7 @@ public class CreateExcel {
 		Path filePath = Paths.get(path + "/src/test/resources/output/FinalRecipeScraping.xlsx");
 		// Check if the file exists
 		if (Files.exists(filePath)) {
-			LoggerLoad.info("Excel file already exists at: " + filePath);
+			System.out.println("Excel file already exists at: " + filePath);
 			return;
 		}
 
@@ -31,7 +31,7 @@ public class CreateExcel {
 
 			try (FileOutputStream fileOut = new FileOutputStream(filePath.toFile())) {
 				workbook.write(fileOut);
-				LoggerLoad.info("Excel sheet created successfully at: " + filePath);
+				System.out.println("Excel sheet created successfully at: " + filePath);
 			}
 
 		} catch (IOException e) {
