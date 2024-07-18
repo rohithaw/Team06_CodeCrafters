@@ -15,11 +15,10 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.base.BaseClass;
-import com.pages.Recipes_AllergyPage;
-import com.pages.Recipes_LCHFPage;
+
 import com.pages.Recipes_LFVPage;
 import com.utilities.CreateExcel;
-import com.utilities.LoggerLoad;
+
 
 public class A_ZScrapedRecipesLFV {
 
@@ -40,7 +39,10 @@ public class A_ZScrapedRecipesLFV {
 	// if you want to run in parallel set it to true
 	@DataProvider(name = "alphabetDataProvider", parallel = true)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { {"M"} };
+		return new Object[][] { {"A"},{"B"},{"C"},
+            {"D"}, {"E"}, {"F"}, {"G"}, {"H"}, {"I"}, {"J"}, {"K"},
+            {"L"}, {"M"}, {"N"}, {"O"}, {"P"}, {"Q"}, {"R"}, {"S"},
+            {"T"}, {"U"}, {"V"}, {"W"}, {"X"}, {"Y"}, {"Z"} };
 	}
 
 	@Test(dataProvider = "alphabetDataProvider")

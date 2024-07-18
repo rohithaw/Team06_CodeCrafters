@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
-			<version>7.10.1</version>
+			<version>7.4.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -92,9 +92,9 @@
 				<version>3.2.3</version>
 				<configuration>
 					<properties>
-						<parallel>methods</parallel>
+						<parallel>tests</parallel>
 						<useUnlimitedThreads>true</useUnlimitedThreads>
-						<threadCount>5</threadCount>
+						<threadCount>30</threadCount>
 					</properties>
 					<suiteXmlFiles>
 						<suiteXmlFile>testng.xml</suiteXmlFile>

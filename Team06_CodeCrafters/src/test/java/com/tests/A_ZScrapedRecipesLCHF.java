@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
 import com.base.BaseClass;
 import com.pages.Recipes_LCHFPage;
 import com.utilities.CreateExcel;
-import com.utilities.LoggerLoad;
+
 
 public class A_ZScrapedRecipesLCHF {
 
@@ -38,7 +38,10 @@ public class A_ZScrapedRecipesLCHF {
 	// if you want to run in parallel set it to true
 	@DataProvider(name = "alphabetDataProvider", parallel = true)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { {"M"} };
+		return new Object[][] { {"A"},{"B"},{"C"},
+            {"D"}, {"E"}, {"F"}, {"G"}, {"H"}, {"I"}, {"J"}, {"K"},
+            {"L"}, {"M"}, {"N"}, {"O"}, {"P"}, {"Q"}, {"R"}, {"S"},
+            {"T"}, {"U"}, {"V"}, {"W"}, {"X"}, {"Y"}, {"Z"} };
 
 	}
 
