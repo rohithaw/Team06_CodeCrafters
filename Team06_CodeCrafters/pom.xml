@@ -91,6 +91,11 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.2.3</version>
 				<configuration>
+					<properties>
+						<parallel>methods</parallel>
+						<useUnlimitedThreads>true</useUnlimitedThreads>
+						<threadCount>5</threadCount>
+					</properties>
 					<suiteXmlFiles>
 						<suiteXmlFile>testng.xml</suiteXmlFile>
 					</suiteXmlFiles>

@@ -18,7 +18,6 @@ import com.utilities.ConfigReader;
 import com.utilities.ExcelRead;
 import com.utilities.ExcelValueCheck;
 import com.utilities.ExcelWrite;
-import com.utilities.LoggerLoad;
 
 public class Recipes_LCHFPage {
 
@@ -40,7 +39,6 @@ public class Recipes_LCHFPage {
 	String alphabetPageTitle = "";
 	private static final Object lock = new Object();
 
-	
 	List<String> columnNamesAdd = Collections.singletonList("Add");
 	List<String> columnNamesEliminate = Collections.singletonList("Eliminate");
 	List<String> columnNamesFoodPRocessing = Collections.singletonList("Food Processing");
@@ -58,9 +56,9 @@ public class Recipes_LCHFPage {
 					columnNamesEliminate, inputDataPath);
 			excellchfFoodProcessingIngredients = ExcelRead.getDataFromExcel("Final list for LCHFElimination ",
 					columnNamesFoodPRocessing, inputDataPath);
-			LoggerLoad.info("LCHF Add: " + excellchfAddIngredients);
-			LoggerLoad.info("LCHF Eliminate: " + excellchfEliminateIngredients);
-			LoggerLoad.info("LCHF Food Processing: " + excellchfFoodProcessingIngredients);
+			System.out.println("LCHF Add: " + excellchfAddIngredients);
+			System.out.println("LCHF Eliminate: " + excellchfEliminateIngredients);
+			System.out.println("LCHF Food Processing: " + excellchfFoodProcessingIngredients);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -76,17 +74,17 @@ public class Recipes_LCHFPage {
 
 		while (true) {
 			pageIndex++;
-			LoggerLoad.info("Page Number: " + pageIndex);
+			System.out.println("Page Number: " + pageIndex);
 
 			try {
 				List<WebElement> recipeCards = driver.findElements(By.className("rcc_recipecard"));
-				LoggerLoad.info("No_of_recipes: " + recipeCards.size());
+				System.out.println("No_of_recipes: " + recipeCards.size());
 
 				for (int j = 0; j < recipeCards.size(); j++) {
 					processRecipe(j);
 				}
 			} catch (Exception e) {
-				LoggerLoad.info("Error while extracting data: " + e.getMessage());
+				System.out.println("Error while extracting data: " + e.getMessage());
 				break;
 			}
 
@@ -105,12 +103,12 @@ public class Recipes_LCHFPage {
 				// Getting recipe id
 				String recipeID = recipeCard.getAttribute("id");
 				String id = recipeID.replaceAll("[^0-9]", "");
-				LoggerLoad.info("Recipe Id: " + id);
+				System.out.println("Recipe Id: " + id);
 
 				// Getting recipe name
 				WebElement recipeNameElement = recipeCard.findElement(By.xpath(".//span[@class='rcc_recipename']/a"));
 				recipeName = recipeNameElement.getText();
-				LoggerLoad.info("Recipe Name: " + recipeName);
+				System.out.println("Recipe Name: " + recipeName);
 
 				// Clicking into the recipe link
 				recipeNameElement.click();
@@ -131,24 +129,45 @@ public class Recipes_LCHFPage {
 
 				List<String> unmatchedLchfIngredients = getUnmatchedIngredients(excellchfEliminateIngredients,
 						webIngredients);
-				unmatchedLchfIngredients = eliminateRedundantUnmatchedIngredients(unmatchedLchfIngredients);
-				List<String> matchedLchfFoodPRocessing = matchWithTag(excellchfFoodProcessingIngredients);
+				
+				List<String> matchedLchfFoodProcessing = matchWithTag(excellchfFoodProcessingIngredients);
 
 				String userDir = System.getProperty("user.dir");
 				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
 				String outputDataPath = userDir + getPathread;
 
-				boolean recipeExistsinAddLCHFConditions = ExcelValueCheck.recipeExistsInExcelCheck("LCHFAdd", recipeID,
+				boolean recipeExistsInAddLCHFConditions = ExcelValueCheck.recipeExistsInExcelCheck("LCHFAdd", recipeID,
 						outputDataPath);
-				boolean recipeExistsinFoodProcessingConditions = ExcelValueCheck
+				boolean recipeExistsInFoodProcessingConditions = ExcelValueCheck
 						.recipeExistsInExcelCheck("LCHFFoodProcessing", recipeID, outputDataPath);
-				boolean recipeNotExistsInEliminateConditions = ExcelValueCheck
-						.recipeExistsInExcelCheck("LCHFEliminate", recipeID, outputDataPath);
-				if (recipeExistsinAddLCHFConditions || recipeExistsinFoodProcessingConditions || recipeNotExistsInEliminateConditions ) {
-					LoggerLoad.info("Recipe already exists in excel: " + recipeID);
-					return; // Exit the method to avoid writing duplicate recipes
+				boolean recipeExistsInEliminateConditions = ExcelValueCheck.recipeExistsInExcelCheck("LCHFEliminate",
+						recipeID, outputDataPath);
+
+				if (recipeExistsInAddLCHFConditions || recipeExistsInFoodProcessingConditions
+						|| recipeExistsInEliminateConditions) {
+					System.out.println("Recipe already exists in Excel: " + recipeID);
+					return; 
 				}
-				
+
+				if (containsEliminatedIngredients(webIngredients, excellchfEliminateIngredients)) {
+					System.out.println(
+							"Recipe " + recipeName + " do not contains eliminated ingredients. Writing to Excel.");
+					try {
+						synchronized (lock) {
+							ExcelWrite.writeToExcel("LCHFEliminate", id, recipeName, recipeCategory, foodCategory,
+									String.join(", ", webIngredients), preparationTime, cookingTime, recipeTags,
+									noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
+									driver.getCurrentUrl(), outputDataPath);
+						}
+					} catch (IOException e) {
+						System.out.println("Error writing to Excel: " + e.getMessage());
+					}
+				} else {
+					if (!unmatchedLchfIngredients.isEmpty()) {
+						System.out.println("Unmatched ingredients found for recipe: " + recipeName
+								+ ", skipping writing to Excel.");
+					}
+				}
 				if (!matchedLchfAddIngredients.isEmpty()) {
 					try {
 						synchronized (lock) {
@@ -158,23 +177,11 @@ public class Recipes_LCHFPage {
 									nutrientValues, driver.getCurrentUrl(), outputDataPath);
 						}
 					} catch (IOException e) {
-						LoggerLoad.info("Error writing to Excel: " + e.getMessage());
+						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
 				}
 
-				if (!unmatchedLchfIngredients.isEmpty()) {
-					try {
-						synchronized (lock) {
-							ExcelWrite.writeToExcel("LCHFEliminate", id, recipeName, recipeCategory, foodCategory,
-									String.join(", ", unmatchedLchfIngredients), preparationTime, cookingTime,
-									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
-									nutrientValues, driver.getCurrentUrl(), outputDataPath);
-						}
-					} catch (IOException e) {
-						LoggerLoad.info("Error writing to Excel: " + e.getMessage());
-					}
-				}
-				if (!matchedLchfFoodPRocessing.isEmpty()) {
+				if (!matchedLchfFoodProcessing.isEmpty()) {
 					try {
 						synchronized (lock) {
 							ExcelWrite.writeToExcel("LCHFFoodProcessing", id, recipeName, recipeCategory, foodCategory,
@@ -183,29 +190,32 @@ public class Recipes_LCHFPage {
 									driver.getCurrentUrl(), outputDataPath);
 						}
 					} catch (IOException e) {
-						LoggerLoad.info("Error writing to Excel: " + e.getMessage());
-					}
-				}
-
-				int maxRetries = 3;
-				int retryCount = 0;
-				while (retryCount < maxRetries) {
-					try {
-						driver.navigate().back();
-						driver.findElement(By.className("rcc_recipecard")).isDisplayed();
-						return; // Navigation successful, exit retry loop
-					} catch (NoSuchElementException e) {
-						LoggerLoad.info("Element not found, retrying...");
-						retryCount++;
+						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
 				}
 			} else {
-				LoggerLoad.info("Index " + index + " out of bounds for recipe cards");
+				System.out.println("Index " + index + " out of bounds for recipe cards");
 			}
+
+			int maxRetries = 3;
+			int retryCount = 0;
+			while (retryCount < maxRetries) {
+				try {
+					driver.navigate().back();
+					driver.findElement(By.className("rcc_recipecard")).isDisplayed();
+					return; // Navigation successful, exit retry loop
+				} catch (NoSuchElementException e) {
+					System.out.println("Element not found, retrying...");
+					retryCount++;
+				}
+			}
+			// } else {
+			// System.out.println("Index " + index + " out of bounds for recipe cards");
+			// }
 		} catch (IndexOutOfBoundsException e) {
-			LoggerLoad.info("Index " + index + " out of bounds for recipe cards");
+			System.out.println("Index " + index + " out of bounds for recipe cards");
 		} catch (Exception e) {
-			LoggerLoad.info("Error in processRecipe: " + e.getMessage());
+			System.out.println("Error in processRecipe: " + e.getMessage());
 		}
 	}
 
@@ -218,7 +228,7 @@ public class Recipes_LCHFPage {
 			String ingredientName = ingredient.getText().trim().toLowerCase();
 			webIngredients.add(ingredientName);
 		}
-		LoggerLoad.info("Ingredients: " + webIngredients);
+		System.out.println("Ingredients: " + webIngredients);
 		return webIngredients;
 	}
 
@@ -230,7 +240,7 @@ public class Recipes_LCHFPage {
 			for (String excelIngredient : excelIngredients) {
 				if (webIngredient.contains(excelIngredient.toLowerCase())
 						|| excelIngredient.toLowerCase().contains(webIngredient)) {
-					LoggerLoad.info("Ingredient match found: Web Ingredient - " + webIngredient
+					System.out.println("Ingredient match found: Web Ingredient - " + webIngredient
 							+ ", Excel Ingredient - " + excelIngredient);
 					matchedIngredients.add(webIngredient);
 				}
@@ -245,7 +255,7 @@ public class Recipes_LCHFPage {
 			nextPageIndex.click();
 			return true;
 		} catch (Exception e) {
-			LoggerLoad.info("No more pages for this alphabet");
+			System.out.println("No more pages for this alphabet");
 			return false;
 		}
 	}
@@ -253,7 +263,6 @@ public class Recipes_LCHFPage {
 	private void getRecipeCategory() {
 
 		try {
-			// je.executeScript("window.scrollBy(0,200)");
 			recipeCategory = driver.findElement(By.xpath("//a[@itemprop='recipeCategory'][1]")).getText();
 			if (recipeCategory.toLowerCase().contains("lunch") || recipeName.toLowerCase().contains("lunch")) {
 				recipeCategory = "Lunch";
@@ -268,9 +277,9 @@ public class Recipes_LCHFPage {
 				recipeCategory = "NA";
 			}
 
-			LoggerLoad.info("Recipe Category is :" + recipeCategory);
+			System.out.println("Recipe Category is :" + recipeCategory);
 		} catch (NoSuchElementException e) {
-			LoggerLoad.info("Recipe category element not found for recipe: " + recipeName);
+			System.out.println("Recipe category element not found for recipe: " + recipeName);
 			recipeCategory = "Unknown";
 		}
 	}
@@ -278,7 +287,7 @@ public class Recipes_LCHFPage {
 	private void getTags() {
 		try {
 			recipeTags = driver.findElement(By.id("recipe_tags")).getText();
-			LoggerLoad.info("Tags are : " + recipeTags);
+			System.out.println("Tags are : " + recipeTags);
 		} catch (NoSuchElementException e) {
 			recipeTags = "Unknown";
 		}
@@ -301,10 +310,10 @@ public class Recipes_LCHFPage {
 				foodCategory = "NA";
 			}
 
-			LoggerLoad.info("Recipe Category is :" + foodCategory);
+			System.out.println("Recipe Category is :" + foodCategory);
 
 		} catch (NoSuchElementException e) {
-			LoggerLoad.info("Food category element not found for recipe: " + recipeName);
+			System.out.println("Food category element not found for recipe: " + recipeName);
 			foodCategory = "Unknown";
 		}
 	}
@@ -377,9 +386,9 @@ public class Recipes_LCHFPage {
 			} else {
 				cuisineCategory = "NA";
 			}
-			LoggerLoad.info("Cuisine Category is :" + cuisineCategory);
+			System.out.println("Cuisine Category is :" + cuisineCategory);
 		} catch (NoSuchElementException e) {
-			LoggerLoad.info("Cuisine category element not found for recipe: " + recipeName);
+			System.out.println("Cuisine category element not found for recipe: " + recipeName);
 			cuisineCategory = "Unknown";
 
 		}
@@ -389,7 +398,7 @@ public class Recipes_LCHFPage {
 	private void getPreparationTime() {
 		try {
 			preparationTime = driver.findElement(By.xpath("//time[@itemprop='prepTime']")).getText();
-			LoggerLoad.info("Preperation Time is :" + preparationTime);
+			System.out.println("Preperation Time is :" + preparationTime);
 		} catch (NoSuchElementException e) {
 			preparationTime = "Unknown";
 		}
@@ -398,7 +407,7 @@ public class Recipes_LCHFPage {
 	private void getCookingTime() {
 		try {
 			cookingTime = driver.findElement(By.xpath("//time[@itemprop='cookTime']")).getText();
-			LoggerLoad.info("Cooking Time is :" + cookingTime);
+			System.out.println("Cooking Time is :" + cookingTime);
 		} catch (NoSuchElementException e) {
 			cookingTime = "Unknown";
 		}
@@ -407,7 +416,7 @@ public class Recipes_LCHFPage {
 	private void getRecipeDescription() {
 		try {
 			recipeDescription = driver.findElement(By.xpath("//span[@id='ctl00_cntrightpanel_lblDesc']")).getText();
-			LoggerLoad.info("Recipe Description: " + recipeDescription);
+			System.out.println("Recipe Description: " + recipeDescription);
 		} catch (NoSuchElementException e) {
 			recipeDescription = "Unknown";
 		}
@@ -417,7 +426,7 @@ public class Recipes_LCHFPage {
 	private void getPreparationMethod() {
 		try {
 			preparationMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']")).getText();
-			LoggerLoad.info("Preparation Method : " + preparationMethod);
+			System.out.println("Preparation Method : " + preparationMethod);
 
 		} catch (NoSuchElementException e) {
 			preparationMethod = "Unknown";
@@ -428,7 +437,7 @@ public class Recipes_LCHFPage {
 	private void getNutrientValues() {
 		try {
 			nutrientValues = driver.findElement(By.xpath("//table[@id='rcpnutrients']/tbody")).getText();
-			LoggerLoad.info("Nutrient Values: " + nutrientValues);
+			System.out.println("Nutrient Values: " + nutrientValues);
 		} catch (NoSuchElementException e) {
 			nutrientValues = "Unknown";
 		}
@@ -437,7 +446,7 @@ public class Recipes_LCHFPage {
 	private void getNoOfServings() {
 		try {
 			noOfServings = driver.findElement(By.id("ctl00_cntrightpanel_lblServes")).getText();
-			LoggerLoad.info("No of Servings: " + noOfServings);
+			System.out.println("No of Servings: " + noOfServings);
 		} catch (NoSuchElementException e) {
 			noOfServings = "Unknown";
 		}
@@ -452,7 +461,7 @@ public class Recipes_LCHFPage {
 			for (String excelIngredient : excelIngredients) {
 				if (normalize(tag).contains(normalize(excelIngredient))
 						|| normalize(excelIngredient).contains(normalize(tag))) {
-					LoggerLoad.info("Match found: " + excelIngredient + " in tags.");
+					System.out.println("Match found: " + excelIngredient + " in tags.");
 					matchedIngredients.add(excelIngredient);
 				}
 			}
@@ -465,6 +474,18 @@ public class Recipes_LCHFPage {
 		return text.toLowerCase().trim();
 	}
 
+	private boolean containsEliminatedIngredients(List<String> webIngredients, List<String> eliminatedIngredients) {
+		for (String webIngredient : webIngredients) {
+			for (String eliminatedIngredient : eliminatedIngredients) {
+				if (webIngredient.toLowerCase().contains(eliminatedIngredient.toLowerCase())
+						|| eliminatedIngredient.toLowerCase().contains(webIngredient.toLowerCase())) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	private List<String> getUnmatchedIngredients(List<String> excelIngredients, List<String> webIngredients) {
 		Set<String> excelSet = new HashSet<>(excelIngredients);
 		List<String> unmatchedIngredients = new ArrayList<>();
@@ -472,7 +493,9 @@ public class Recipes_LCHFPage {
 		for (String webIngredient : webIngredients) {
 			boolean found = false;
 			for (String excelIngredient : excelSet) {
-				if (webIngredient.toLowerCase().contains(excelIngredient.toLowerCase())) {
+				// Check for substring matches in both directions
+				if (webIngredient.toLowerCase().contains(excelIngredient.toLowerCase())
+						|| excelIngredient.toLowerCase().contains(webIngredient.toLowerCase())) {
 					found = true;
 					break;
 				}
@@ -484,8 +507,5 @@ public class Recipes_LCHFPage {
 		return unmatchedIngredients;
 	}
 
-	private List<String> eliminateRedundantUnmatchedIngredients(List<String> unmatchedIngredients) {
-		return new ArrayList<>(new HashSet<>(unmatchedIngredients));
-	}
-
+	
 }

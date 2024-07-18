@@ -39,9 +39,9 @@ public class A_ZScrapedRecipesAllergy {
 	}
 
 	// if you want to run in parallel set it to true
-	@DataProvider(name = "alphabetDataProvider", parallel = false)
+	@DataProvider(name = "alphabetDataProvider", parallel = true)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { { "A" } };
+		return new Object[][] { { "Z" },{"I"}};
 	}
 
 	@Test(dataProvider = "alphabetDataProvider")
