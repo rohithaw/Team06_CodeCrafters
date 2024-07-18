@@ -155,8 +155,9 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 				boolean recipeExistsInRecipeToAvoidConditions = ExcelValueCheck
 						.recipeExistsInExcelCheck("LFVRecipesToAvoid", recipeID, outputDataPath);
 
-				if (recipeExistsinAddVeganConditions || recipeExistsinAddNotVeganConditions
-						|| recipeNotExistsInEliminateConditions || recipeExistsInRecipeToAvoidConditions) {
+				
+				if (recipeExistsinAddVeganConditions || recipeExistsinAddNotVeganConditions || recipeNotExistsInEliminateConditions || recipeExistsInRecipeToAvoidConditions ) {
+
 					System.out.println("Recipe already exists in excel: " + recipeID);
 					return; // Exit the method to avoid writing duplicate recipes
 				}
@@ -199,6 +200,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 						}
 					} catch (IOException e) {
 						System.out.println("Error writing to Excel: " + e.getMessage());
+
 					}
 				}
 
@@ -206,6 +208,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 					if (!unmatchedLFVIngredients.isEmpty()) {
 						System.out.println("Unmatched ingredients found for recipe: " + recipeName
 								+ ", skipped writing to Excel.");
+
 					}
 				}
 
@@ -223,6 +226,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 				}
 			}
 
+
 			else {
 				System.out.println("Index " + index + " out of bounds for recipe cards");
 			}
@@ -238,6 +242,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 					System.out.println("Element not found, retrying...");
 					retryCount++;
 				}
+
 			}
 
 		} catch (IndexOutOfBoundsException e) {
@@ -319,7 +324,9 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 			for (String excelIngredient : excelIngredients) {
 				if (normalize(tag).contains(normalize(excelIngredient))
 						|| normalize(excelIngredient).contains(normalize(tag))) {
-					System.out.println("Match found: " + excelIngredient + " in recipe name.");
+
+					System.out.println("Match found: " + excelIngredient + " in tags.");
+
 					matchedIngredients.add(excelIngredient);
 				}
 			}
