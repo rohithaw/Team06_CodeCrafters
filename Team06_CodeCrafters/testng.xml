@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-<suite name="ParallelSuite" parallel="methods" thread-count="5">
-  <test name="ParallelTest">
-    <classes>
-      <class name="com.tests.A_ZScrapedRecipes"/>
-    </classes>
-  </test> <!-- ParallelTest -->
-</suite> <!-- ParallelSuite -->
+<suite name="ParallelSuite" parallel="tests" thread-count="5">
+	<test name="Test A">
+		<classes>
+			<class name="com.tests.A_ZScrapedRecipesLCHF" />
+		</classes>
+	</test>
+	<test name="Test B">
+		<classes>
+			<class name="com.tests.A_ZScrapedRecipesAllergy" />
+		</classes>
+	</test>
+	<test name="Test C">
+		<classes>
+			<class name="com.tests.A_ZScrapedRecipesLFV" />
+		</classes>
+	</test>
+</suite> <!--
+ParallelSuite -->
 

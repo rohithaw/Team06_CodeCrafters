@@ -15,12 +15,16 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.base.BaseClass;
+import com.pages.Recipes_AllergyPage;
 import com.pages.Recipes_LCHFPage;
+import com.pages.Recipes_LFVPage;
 import com.utilities.CreateExcel;
+import com.utilities.LoggerLoad;
 
-public class ScrapedRecipesLCHF {
+public class A_ZScrapedRecipesAllergy {
 
-	private Recipes_LCHFPage lchfpage;
+	private Recipes_AllergyPage allergyPage;
+	
 
 	@BeforeClass
 	public void createExcelFile() {
@@ -30,20 +34,21 @@ public class ScrapedRecipesLCHF {
 	@BeforeMethod
 	public void setup() throws Throwable {
 		BaseClass.browsersetup();
-		lchfpage = new Recipes_LCHFPage();
-		lchfpage.readExcel(); // Ensure readExcel is called
+		allergyPage = new Recipes_AllergyPage();
+		allergyPage.readExcel();
 	}
 
-	@DataProvider(name = "alphabetDataProvider", parallel = false)
+	// if you want to run in parallel set it to true
+	@DataProvider(name = "alphabetDataProvider", parallel = true)
 	public Object[][] alphabetDataProvider() {
-		return new Object[][] { { "A" } };
+		return new Object[][] { { "Z" },{"I"}};
 	}
 
 	@Test(dataProvider = "alphabetDataProvider")
 	public void clickAlphabetLink(String alphabet) throws Throwable {
 		waitForElementToBeClickable(By.xpath("//a[text()='" + alphabet + "']")).click();
-		System.out.println("Clicked on alphabet: " + alphabet);
-		lchfpage.extractDataFromPages(BaseClass.getDriver(), alphabet);
+		LoggerLoad.info("Clicked on alphabet: " + alphabet);
+		allergyPage.extractDataFromPages(BaseClass.getDriver(), alphabet);
 	}
 
 	private WebElement waitForElementToBeClickable(By locator) throws Throwable {

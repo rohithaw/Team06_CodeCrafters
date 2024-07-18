@@ -1,3 +1,4 @@
+
 package com.pages;
 
 import java.io.IOException;
@@ -435,3 +436,4 @@ public class Recipes_AllergyPage {
 	}
 
 }
+
