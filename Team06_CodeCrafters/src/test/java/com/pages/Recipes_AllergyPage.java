@@ -18,7 +18,7 @@ import com.utilities.ConfigReader;
 import com.utilities.ExcelRead;
 import com.utilities.ExcelValueCheck;
 import com.utilities.ExcelWrite;
-import com.utilities.LoggerLoad;
+
 
 public class Recipes_AllergyPage {
 
@@ -121,20 +121,21 @@ public class Recipes_AllergyPage {
 				String userDir = System.getProperty("user.dir");
 				String getPathread = ConfigReader.getGlobalValue("outputExcelPath");
 				String outputDataPath = userDir + getPathread;
-				boolean recipeNotExistsInAllergyConditions = ExcelValueCheck
-						.recipeExistsInExcelCheck("Allergy", recipeID, outputDataPath);
+				boolean recipeNotExistsInAllergyConditions = ExcelValueCheck.recipeExistsInExcelCheck("Allergy",
+						recipeID, outputDataPath);
 				if (recipeNotExistsInAllergyConditions) {
 					System.out.println("Recipe already exists in excel: " + recipeID);
 					return; // Exit the method to avoid writing duplicate recipes
 				}
 				if (containsEliminatedIngredients(webIngredients, excelAllergyIngredients)) {
-					System.out.println("Recipe " + recipeName + " do not contain eliminated ingredients. Writing to Excel.");
+					System.out.println(
+							"Recipe " + recipeName + " do not contain eliminated ingredients. Writing to Excel.");
 					try {
 						synchronized (lock) {
-							ExcelWrite.writeToExcel("LFVEliminate", id, recipeName, recipeCategory, foodCategory,
-									String.join(", ",webIngredients ), preparationTime, cookingTime,
-									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
-									nutrientValues, driver.getCurrentUrl(), outputDataPath);
+							ExcelWrite.writeToExcel("Allergy", id, recipeName, recipeCategory, foodCategory,
+									String.join(", ", webIngredients), preparationTime, cookingTime, recipeTags,
+									noOfServings, cuisineCategory, recipeDescription, preparationMethod, nutrientValues,
+									driver.getCurrentUrl(), outputDataPath);
 						}
 					} catch (IOException e) {
 						System.out.println("Error writing to Excel: " + e.getMessage());
@@ -142,25 +143,11 @@ public class Recipes_AllergyPage {
 				}
 
 				else {
-					if (!excelAllergyIngredients.isEmpty()) {
-						System.out.println("Unmatched ingredients found for recipe: " + recipeName + ", skipped writing to Excel.");
+					if (!unmatchedAllergyIngredients.isEmpty()) {
+						System.out.println("Unmatched ingredients found for recipe: " + recipeName
+								+ ", skipped writing to Excel.");
 					}
 				}
-				
-//				if (!unmatchedAllergyIngredients.isEmpty()) {
-//					try {
-//						synchronized (lock) {
-//
-//							ExcelWrite.writeToExcel("Allergy", id, recipeName, recipeCategory, foodCategory,
-//									String.join(", ", unmatchedAllergyIngredients), preparationTime, cookingTime,
-//									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
-//									nutrientValues, driver.getCurrentUrl(), outputDataPath);
-//						}
-//					} catch (IOException e) {
-//						System.out.println("Error writing to Excel: " + e.getMessage());
-//					}
-//				}
-
 			}
 
 			int maxRetries = 3;
@@ -175,9 +162,9 @@ public class Recipes_AllergyPage {
 					retryCount++;
 				}
 			}
-		} catch (IndexOutOfBoundsException e) {
-			System.out.println("Index " + index + " out of bounds for recipe cards");
-		} catch (Exception e) {
+		}
+
+		catch (Exception e) {
 			System.out.println("Error in processRecipe: " + e.getMessage());
 		}
 	}
@@ -193,7 +180,7 @@ public class Recipes_AllergyPage {
 		}
 		return true;
 	}
-	
+
 	private List<String> extractIngredients() {
 		List<WebElement> ingredientsList = driver
 				.findElements(By.xpath("//div[@id='rcpinglist']//span[@itemprop='recipeIngredient']//a/span"));
@@ -208,25 +195,25 @@ public class Recipes_AllergyPage {
 	}
 
 	private List<String> getUnmatchedIngredients(List<String> excelIngredients, List<String> webIngredients) {
-	    Set<String> excelSet = new HashSet<>(excelIngredients);
-	    List<String> unmatchedIngredients = new ArrayList<>();
-	    for (String webIngredient : webIngredients) {
-	        boolean found = false;
-	        for (String excelIngredient : excelSet) {
-	            // Check for substring matches in both directions
-	            if (webIngredient.toLowerCase().contains(excelIngredient.toLowerCase()) ||
-	                excelIngredient.toLowerCase().contains(webIngredient.toLowerCase())) {
-	                found = true;
-	                break;
-	            }
-	        }
-	        if (!found) {
-	            unmatchedIngredients.add(webIngredient);
-	        }
-	    }
-	    return unmatchedIngredients;
+		Set<String> excelSet = new HashSet<>(excelIngredients);
+		List<String> unmatchedIngredients = new ArrayList<>();
+		for (String webIngredient : webIngredients) {
+			boolean found = false;
+			for (String excelIngredient : excelSet) {
+				// Check for substring matches in both directions
+				if (webIngredient.toLowerCase().contains(excelIngredient.toLowerCase())
+						|| excelIngredient.toLowerCase().contains(webIngredient.toLowerCase())) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				unmatchedIngredients.add(webIngredient);
+			}
+		}
+		return unmatchedIngredients;
 	}
-	
+
 	private List<String> eliminateRedundantUnmatchedIngredients(List<String> unmatchedIngredients) {
 		return new ArrayList<>(new HashSet<>(unmatchedIngredients));
 	}
@@ -436,4 +423,3 @@ public class Recipes_AllergyPage {
 	}
 
 }
-

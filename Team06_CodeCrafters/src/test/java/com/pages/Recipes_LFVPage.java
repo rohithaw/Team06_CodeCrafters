@@ -315,6 +315,7 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 		return unmatchedIngredients;
 	}
 
+	//recipes to avoid with tags
 	public List<String> matchwithRecipeToAvoid(List<String> excelIngredients) {
 		List<String> matchedIngredients = new ArrayList<>();
 		String tagText = driver.findElement(By.id("recipe_tags")).getText().toLowerCase();
@@ -334,6 +335,22 @@ public class Recipes_LFVPage extends A_ZScrapedRecipesLFV {
 		return matchedIngredients;
 	}
 
+	//recipe to avoid with preparation method
+	public List<String> matchwithRecipesToAvoid(List<String> excelIngredients) {
+	      String preparationMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']")).getText();
+	      String preparationMethodLower = preparationMethod.toLowerCase();
+	      List<String> RecipesToAvoid = new ArrayList<>();
+	      for (String excelIngredient : excelIngredients) {
+	          String excelIngredientLower = excelIngredient.toLowerCase();
+	          if (preparationMethodLower.contains(excelIngredientLower)|| excelIngredient.toLowerCase().contains(preparationMethodLower)) {
+	              System.out.println("Match found: " + excelIngredient + " in preparation method.");
+	              RecipesToAvoid.add(excelIngredient); // Add the matched ingredient, not the whole preparation method text
+	          }
+	      }
+	      return RecipesToAvoid;
+	  }
+	
+	
 	private String normalize(String text) {
 		return text.toLowerCase();
 	}
