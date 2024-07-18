@@ -1,3 +1,4 @@
+
 package com.pages;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class Recipes_AllergyPage {
 		try {
 			excelAllergyIngredients = ExcelRead.getDataFromExcel("Filter -1 Allergies - Bonus Poi", columnNamesAllergy,
 					inputDataPath);
-			LoggerLoad.info("Allergy Ingredients List: " + excelAllergyIngredients);
+			System.out.println("Allergy Ingredients List: " + excelAllergyIngredients);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -64,17 +65,17 @@ public class Recipes_AllergyPage {
 
 		while (true) {
 			pageIndex++;
-			LoggerLoad.info("Page Number: " + pageIndex);
+			System.out.println("Page Number: " + pageIndex);
 
 			try {
 				List<WebElement> recipeCards = driver.findElements(By.className("rcc_recipecard"));
-				LoggerLoad.info("No_of_recipes: " + recipeCards.size());
+				System.out.println("No_of_recipes: " + recipeCards.size());
 
 				for (int j = 0; j < recipeCards.size(); j++) {
 					processRecipe(j);
 				}
 			} catch (Exception e) {
-				LoggerLoad.info("Error while extracting data: " + e.getMessage());
+				System.out.println("Error while extracting data: " + e.getMessage());
 				break;
 			}
 
@@ -93,12 +94,12 @@ public class Recipes_AllergyPage {
 				// Getting recipe id
 				String recipeID = recipeCard.getAttribute("id");
 				String id = recipeID.replaceAll("[^0-9]", "");
-				LoggerLoad.info("Recipe Id: " + id);
+				System.out.println("Recipe Id: " + id);
 
 				// Getting recipe name
 				WebElement recipeNameElement = recipeCard.findElement(By.xpath(".//span[@class='rcc_recipename']/a"));
 				recipeName = recipeNameElement.getText();
-				LoggerLoad.info("Recipe Name: " + recipeName);
+				System.out.println("Recipe Name: " + recipeName);
 
 				// Clicking into the recipe link
 				recipeNameElement.click();
@@ -123,23 +124,42 @@ public class Recipes_AllergyPage {
 				boolean recipeNotExistsInAllergyConditions = ExcelValueCheck
 						.recipeExistsInExcelCheck("Allergy", recipeID, outputDataPath);
 				if (recipeNotExistsInAllergyConditions) {
-					LoggerLoad.info("Recipe already exists in excel: " + recipeID);
+					System.out.println("Recipe already exists in excel: " + recipeID);
 					return; // Exit the method to avoid writing duplicate recipes
 				}
-				
-				if (!unmatchedAllergyIngredients.isEmpty()) {
+				if (containsEliminatedIngredients(webIngredients, excelAllergyIngredients)) {
+					System.out.println("Recipe " + recipeName + " do not contain eliminated ingredients. Writing to Excel.");
 					try {
 						synchronized (lock) {
-
-							ExcelWrite.writeToExcel("Allergy", id, recipeName, recipeCategory, foodCategory,
-									String.join(", ", unmatchedAllergyIngredients), preparationTime, cookingTime,
+							ExcelWrite.writeToExcel("LFVEliminate", id, recipeName, recipeCategory, foodCategory,
+									String.join(", ",webIngredients ), preparationTime, cookingTime,
 									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
 									nutrientValues, driver.getCurrentUrl(), outputDataPath);
 						}
 					} catch (IOException e) {
-						LoggerLoad.info("Error writing to Excel: " + e.getMessage());
+						System.out.println("Error writing to Excel: " + e.getMessage());
 					}
 				}
+
+				else {
+					if (!excelAllergyIngredients.isEmpty()) {
+						System.out.println("Unmatched ingredients found for recipe: " + recipeName + ", skipped writing to Excel.");
+					}
+				}
+				
+//				if (!unmatchedAllergyIngredients.isEmpty()) {
+//					try {
+//						synchronized (lock) {
+//
+//							ExcelWrite.writeToExcel("Allergy", id, recipeName, recipeCategory, foodCategory,
+//									String.join(", ", unmatchedAllergyIngredients), preparationTime, cookingTime,
+//									recipeTags, noOfServings, cuisineCategory, recipeDescription, preparationMethod,
+//									nutrientValues, driver.getCurrentUrl(), outputDataPath);
+//						}
+//					} catch (IOException e) {
+//						System.out.println("Error writing to Excel: " + e.getMessage());
+//					}
+//				}
 
 			}
 
@@ -151,17 +171,29 @@ public class Recipes_AllergyPage {
 					driver.findElement(By.className("rcc_recipecard")).isDisplayed();
 					return; // Navigation successful, exit retry loop
 				} catch (NoSuchElementException e) {
-					LoggerLoad.info("Element not found, retrying...");
+					System.out.println("Element not found, retrying...");
 					retryCount++;
 				}
 			}
 		} catch (IndexOutOfBoundsException e) {
-			LoggerLoad.info("Index " + index + " out of bounds for recipe cards");
+			System.out.println("Index " + index + " out of bounds for recipe cards");
 		} catch (Exception e) {
-			LoggerLoad.info("Error in processRecipe: " + e.getMessage());
+			System.out.println("Error in processRecipe: " + e.getMessage());
 		}
 	}
 
+	private boolean containsEliminatedIngredients(List<String> webIngredients, List<String> eliminatedIngredients) {
+		for (String webIngredient : webIngredients) {
+			for (String eliminatedIngredient : eliminatedIngredients) {
+				if (webIngredient.toLowerCase().contains(eliminatedIngredient.toLowerCase())
+						|| eliminatedIngredient.toLowerCase().contains(webIngredient.toLowerCase())) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
 	private List<String> extractIngredients() {
 		List<WebElement> ingredientsList = driver
 				.findElements(By.xpath("//div[@id='rcpinglist']//span[@itemprop='recipeIngredient']//a/span"));
@@ -171,29 +203,30 @@ public class Recipes_AllergyPage {
 			String ingredientName = ingredient.getText().trim().toLowerCase();
 			webIngredients.add(ingredientName);
 		}
-		LoggerLoad.info("Ingredients: " + webIngredients);
+		System.out.println("Ingredients: " + webIngredients);
 		return webIngredients;
 	}
 
 	private List<String> getUnmatchedIngredients(List<String> excelIngredients, List<String> webIngredients) {
-		Set<String> excelSet = new HashSet<>(excelIngredients);
-		List<String> unmatchedIngredients = new ArrayList<>();
-
-		for (String webIngredient : webIngredients) {
-			boolean found = false;
-			for (String excelIngredient : excelSet) {
-				if (webIngredient.toLowerCase().contains(excelIngredient.toLowerCase()) || excelIngredient.toLowerCase().contains(webIngredient)) {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				unmatchedIngredients.add(webIngredient);
-			}
-		}
-		return unmatchedIngredients;
+	    Set<String> excelSet = new HashSet<>(excelIngredients);
+	    List<String> unmatchedIngredients = new ArrayList<>();
+	    for (String webIngredient : webIngredients) {
+	        boolean found = false;
+	        for (String excelIngredient : excelSet) {
+	            // Check for substring matches in both directions
+	            if (webIngredient.toLowerCase().contains(excelIngredient.toLowerCase()) ||
+	                excelIngredient.toLowerCase().contains(webIngredient.toLowerCase())) {
+	                found = true;
+	                break;
+	            }
+	        }
+	        if (!found) {
+	            unmatchedIngredients.add(webIngredient);
+	        }
+	    }
+	    return unmatchedIngredients;
 	}
-
+	
 	private List<String> eliminateRedundantUnmatchedIngredients(List<String> unmatchedIngredients) {
 		return new ArrayList<>(new HashSet<>(unmatchedIngredients));
 	}
@@ -204,7 +237,7 @@ public class Recipes_AllergyPage {
 			nextPageIndex.click();
 			return true;
 		} catch (Exception e) {
-			LoggerLoad.info("No more pages for this alphabet");
+			System.out.println("No more pages for this alphabet");
 			return false;
 		}
 	}
@@ -226,9 +259,9 @@ public class Recipes_AllergyPage {
 				recipeCategory = "NA";
 			}
 
-			LoggerLoad.info("Recipe Category is :" + recipeCategory);
+			System.out.println("Recipe Category is :" + recipeCategory);
 		} catch (NoSuchElementException e) {
-			LoggerLoad.info("Recipe category element not found for recipe: " + recipeName);
+			System.out.println("Recipe category element not found for recipe: " + recipeName);
 			recipeCategory = "Unknown";
 		}
 	}
@@ -236,7 +269,7 @@ public class Recipes_AllergyPage {
 	private void getTags() {
 		try {
 			recipeTags = driver.findElement(By.id("recipe_tags")).getText();
-			LoggerLoad.info("Tags are : " + recipeTags);
+			System.out.println("Tags are : " + recipeTags);
 		} catch (NoSuchElementException e) {
 			recipeTags = "Unknown";
 		}
@@ -259,10 +292,10 @@ public class Recipes_AllergyPage {
 				foodCategory = "NA";
 			}
 
-			LoggerLoad.info("Recipe Category is :" + foodCategory);
+			System.out.println("Recipe Category is :" + foodCategory);
 
 		} catch (NoSuchElementException e) {
-			LoggerLoad.info("Food category element not found for recipe: " + recipeName);
+			System.out.println("Food category element not found for recipe: " + recipeName);
 			foodCategory = "Unknown";
 		}
 	}
@@ -335,9 +368,9 @@ public class Recipes_AllergyPage {
 			} else {
 				cuisineCategory = "NA";
 			}
-			LoggerLoad.info("Cuisine Category is :" + cuisineCategory);
+			System.out.println("Cuisine Category is :" + cuisineCategory);
 		} catch (NoSuchElementException e) {
-			LoggerLoad.info("Cuisine category element not found for recipe: " + recipeName);
+			System.out.println("Cuisine category element not found for recipe: " + recipeName);
 			cuisineCategory = "Unknown";
 
 		}
@@ -347,7 +380,7 @@ public class Recipes_AllergyPage {
 	private void getPreparationTime() {
 		try {
 			preparationTime = driver.findElement(By.xpath("//time[@itemprop='prepTime']")).getText();
-			LoggerLoad.info("Preperation Time is :" + preparationTime);
+			System.out.println("Preperation Time is :" + preparationTime);
 			// je.executeScript("window.scrollBy(0,200)");
 		} catch (NoSuchElementException e) {
 			preparationTime = "Unknown";
@@ -357,7 +390,7 @@ public class Recipes_AllergyPage {
 	private void getCookingTime() {
 		try {
 			cookingTime = driver.findElement(By.xpath("//time[@itemprop='cookTime']")).getText();
-			LoggerLoad.info("Cooking Time is :" + cookingTime);
+			System.out.println("Cooking Time is :" + cookingTime);
 		} catch (NoSuchElementException e) {
 			cookingTime = "Unknown";
 		}
@@ -366,7 +399,7 @@ public class Recipes_AllergyPage {
 	private void getRecipeDescription() {
 		try {
 			recipeDescription = driver.findElement(By.xpath("//span[@id='ctl00_cntrightpanel_lblDesc']")).getText();
-			LoggerLoad.info("Recipe Description: " + recipeDescription);
+			System.out.println("Recipe Description: " + recipeDescription);
 		} catch (NoSuchElementException e) {
 			recipeDescription = "Unknown";
 		}
@@ -376,7 +409,7 @@ public class Recipes_AllergyPage {
 	private void getPreparationMethod() {
 		try {
 			preparationMethod = driver.findElement(By.xpath("//div[@id='ctl00_cntrightpanel_pnlRcpMethod']")).getText();
-			LoggerLoad.info("Preparation Method : " + preparationMethod);
+			System.out.println("Preparation Method : " + preparationMethod);
 
 		} catch (NoSuchElementException e) {
 			preparationMethod = "Unknown";
@@ -387,7 +420,7 @@ public class Recipes_AllergyPage {
 	private void getNutrientValues() {
 		try {
 			nutrientValues = driver.findElement(By.xpath("//table[@id='rcpnutrients']/tbody")).getText();
-			LoggerLoad.info("Nutrient Values: " + nutrientValues);
+			System.out.println("Nutrient Values: " + nutrientValues);
 		} catch (NoSuchElementException e) {
 			nutrientValues = "Unknown";
 		}
@@ -396,10 +429,11 @@ public class Recipes_AllergyPage {
 	private void getNoOfServings() {
 		try {
 			noOfServings = driver.findElement(By.id("ctl00_cntrightpanel_lblServes")).getText();
-			LoggerLoad.info("No of Servings: " + noOfServings);
+			System.out.println("No of Servings: " + noOfServings);
 		} catch (NoSuchElementException e) {
 			noOfServings = "Unknown";
 		}
 	}
 
 }
+
